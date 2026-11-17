@@ -51,6 +51,8 @@ export interface EditorState {
             height: number;
         };
     };
+    bringToFront: (ids: string[]) => void;
+    sendToBack: (ids: string[]) => void;
     brushConfig: BrushConfig;
     setBrushConfig: (patch: Partial<BrushConfig>) => void;
     activeTool: ToolType;
@@ -125,6 +127,19 @@ const useEditorState = create<EditorState>()(
             strokeWidth: 4,
             tension: 0.4,
         },
+        bringToFront: (ids) =>
+            executeCommand(set, "Bring to Front", (draft) => {
+                const moving = draft.filter((s) => ids.includes(s.id));
+                const rest = draft.filter((s) => !ids.includes(s.id));
+                draft.splice(0, draft.length, ...rest, ...moving);
+            }),
+
+        sendToBack: (ids) =>
+            executeCommand(set, "Send to Back", (draft) => {
+                const moving = draft.filter((s) => ids.includes(s.id));
+                const rest = draft.filter((s) => !ids.includes(s.id));
+                draft.splice(0, draft.length, ...moving, ...rest);
+            }),
         setBrushConfig: (patch) =>
             set((state) => ({
                 brushConfig: {...state.brushConfig, ...patch},
