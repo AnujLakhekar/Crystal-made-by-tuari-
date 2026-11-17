@@ -14,12 +14,16 @@ A desktop drawing application built with Tauri, React, and Konva.
 
 ## Features
 
-- Canvas-based drawing with shape support (Rectangles, Circles)
+- Canvas-based drawing with shape support (Rectangles, Circles, Lines)
+- Freehand pencil drawing with real-time preview
 - Draggable shapes with selection and multi-selection (Shift+Click to toggle)
 - Box selection tool for selecting multiple shapes at once
 - Shape transformation (rotate, scale) with Figma-style handles
 - Rotation snapping at 45° intervals
-- Floating tool bar with cursor, select, and shape-drawing tools
+- Selection toolbar with formatting tools (fill, border, shadow, alignment, duplicate, delete)
+- Floating tool bar with cursor, pencil, select, and shape-drawing tools
+- Full undo/redo with keyboard shortcuts (Ctrl+Z / Ctrl+Y)
+- Delete selected shapes with Delete/Backspace key
 - Collapsible sidebar with smooth animation
 - Responsive layout (sidebar hidden on mobile)
 
@@ -58,14 +62,17 @@ npm run tauri build
 ```
 src/
 ├── components/
+│   ├── ShapeItem.tsx      # Memoized shape renderer (Rect/Circle/Line)
 │   ├── Sidebar.tsx        # Collapsible sidebar panel (250px ↔ 48px)
-│   ├── Stage.tsx          # Konva canvas with shape rendering and transformation
-│   └── ToolTip.tsx        # Floating tool bar with shape popover
+│   ├── Stage.tsx          # Konva canvas with shapes, freehand drawing, and transforms
+│   ├── ToolBar.tsx        # Selection formatting toolbar (fill, border, shadow, align)
+│   └── ToolTip.tsx        # Floating tool bar with tools and undo/redo
 ├── hooks/
-│   └── useDevice.tsx      # Device detection hook (mobile/tablet/desktop)
+│   ├── useDevice.ts       # Device detection hook (mobile/tablet/desktop)
+│   └── useHistory.ts      # Keyboard shortcuts for undo/redo/delete
 ├── store/
 │   ├── DocumentState.ts   # Document state management (placeholder)
-│   └── EditorState.ts     # Editor state (shapes, stage size, selection)
+│   └── EditorState.ts     # Editor state (shapes, activeTool, selection, undo/redo)
 ├── App.tsx                # Main app layout with Radix Grid
 └── main.tsx               # Entry point with Radix Theme provider
 ```
@@ -78,7 +85,9 @@ The app uses **Zustand** with `subscribeWithSelector` for fine-grained React sub
 
 - **`shapes`**: Array of `BaseShape` objects on the canvas
 - **`selectedIds`**: Array of currently selected shape IDs
+- **`activeTool`**: Current tool mode (CURSOR, SELECT, PENCIL, SHAPE)
 - **`stage.size`**: Current canvas dimensions (width × height)
+- **`past`/`future`**: Undo/redo history stacks (Immer JSON patches, max 50 entries)
 
 ### Shape Model
 
@@ -87,7 +96,7 @@ Each shape on the canvas is a `BaseShape`:
 ```typescript
 interface BaseShape {
     id: string;           // UUID
-    type: string;         // "Rect" | "Circle"
+    type: string;         // "Rect" | "Circle" | "Line"
     x: number;            // Position X
     y: number;            // Position Y
     rotation: number;     // Rotation in degrees
@@ -99,24 +108,43 @@ interface BaseShape {
 
 ### Tools
 
-The floating tool bar provides three tool modes:
+The floating tool bar provides four tool modes:
 
 | Tool | Description |
 |------|-------------|
 | **Cursor** | Drag and transform shapes |
+| **Pencil** | Freehand drawing (saves as Line shapes) |
 | **Select** | Box selection (click and drag on empty canvas) |
 | **Shape** | Popover to add new Rectangles or Circles |
+
+All shape mutations (add, update, delete) are recorded in the undo/redo history via Immer patches.
 
 ### Component Overview
 
 #### `Stage.tsx`
 The main canvas component handling:
 - Konva `Stage` and `Layer` rendering
-- Shape rendering via `shapeRender()` function
-- Mouse event handling for box selection
+- Shape rendering via `ShapeItem` components (Rect, Circle, Line)
+- Freehand pencil drawing with real-time preview line
+- Mouse event handling for box selection and pencil drawing
 - Transformer for shape rotation and scaling
 - Figma-style custom anchor handles (pill-shaped side handles, circular rotation handle)
 - Minimum resize constraint (20×20px)
+- Selection toolbar positioning above selected shapes
+
+#### `ShapeItem.tsx`
+- Memoized component for rendering individual shapes
+- Polymorphic rendering: Rect, Circle, Line
+- Click-to-select with Shift+click multi-select
+- Drag support (when tool is CURSOR)
+- Transform support via Transformer component
+
+#### `ToolBar.tsx`
+- Context-sensitive selection toolbar appearing above selected shapes
+- Formatting controls: random fill, border, dashed border, shadow
+- Canvas alignment: left, center, right
+- Duplicate and delete actions
+- All mutations recorded in undo/redo history
 
 #### `Sidebar.tsx`
 - Collapsible panel (250px expanded, 48px collapsed)
@@ -125,10 +153,15 @@ The main canvas component handling:
 
 #### `ToolTip.tsx`
 - Floating toolbar positioned at the bottom center
-- Tool buttons with active state highlighting
+- Tool buttons: Cursor, Pencil, Select, Shape (with active state highlighting)
 - Shape addition popover with Rect and Circle options
+- Undo/Redo buttons with keyboard shortcut labels
 
-#### `useDevice.tsx`
+#### `useHistory.ts`
+- Registers keyboard shortcuts: Ctrl+Z (undo), Ctrl+Y (redo), Delete/Backspace (delete shapes)
+- Skips shortcuts when focused on input/textarea/contentEditable
+
+#### `useDevice.ts`
 - Detects device type (mobile, tablet, desktop)
 - Tracks window dimensions and orientation
 - Provides pixel ratio and touch support detection
@@ -138,8 +171,8 @@ The main canvas component handling:
 
 ### Adding a New Shape Type
 
-1. Extend the `shapeRender()` function in `Stage.tsx` with a new `case` in the switch
-2. Update the `handleAddShape()` function to support the new type
+1. Add a new `case` in the switch statement in `ShapeItem.tsx`
+2. Update the `handleAddShape()` function in `Stage.tsx` to support the new type
 3. Add a button for the new shape in `ToolTip.tsx`
 
 ### Performance Notes

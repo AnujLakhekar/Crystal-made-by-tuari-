@@ -1,86 +1,228 @@
-// import * as React from "react";
-// import { Toolbar } from "radix-ui";
-// import {
-//     StrikethroughIcon,
-//     TextAlignLeftIcon,
-//     TextAlignCenterIcon,
-//     TextAlignRightIcon,
-//     FontBoldIcon,
-//     FontItalicIcon,
-// } from "@radix-ui/react-icons";
-//
-// const Toolbar = () => (
-//     <Toolbar.Root
-//         className="flex w-full min-w-max rounded-md bg-white p-2.5 shadow-[0_2px_10px] shadow-blackA4"
-//         aria-label="Formatting options"
-//     >
-//         <Toolbar.ToggleGroup type="multiple" aria-label="Text formatting">
-//             <Toolbar.ToggleItem
-//                 className="ml-0.5 inline-flex h-[25px] flex-shrink-0 flex-grow-0 basis-auto items-center justify-center rounded bg-white px-[5px] text-[13px] leading-none text-mauve11 outline-none first:ml-0 hover:bg-violet3 hover:text-violet11 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7 data-[state=on]:bg-violet5 data-[state=on]:text-violet11"
-//                 value="bold"
-//                 aria-label="Bold"
-//             >
-//                 <FontBoldIcon />
-//             </Toolbar.ToggleItem>
-//             <Toolbar.ToggleItem
-//                 className="ml-0.5 inline-flex h-[25px] flex-shrink-0 flex-grow-0 basis-auto items-center justify-center rounded bg-white px-[5px] text-[13px] leading-none text-mauve11 outline-none first:ml-0 hover:bg-violet3 hover:text-violet11 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7 data-[state=on]:bg-violet5 data-[state=on]:text-violet11"
-//                 value="italic"
-//                 aria-label="Italic"
-//             >
-//                 <FontItalicIcon />
-//             </Toolbar.ToggleItem>
-//             <Toolbar.ToggleItem
-//                 className="ml-0.5 inline-flex h-[25px] flex-shrink-0 flex-grow-0 basis-auto items-center justify-center rounded bg-white px-[5px] text-[13px] leading-none text-mauve11 outline-none first:ml-0 hover:bg-violet3 hover:text-violet11 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7 data-[state=on]:bg-violet5 data-[state=on]:text-violet11"
-//                 value="strikethrough"
-//                 aria-label="Strike through"
-//             >
-//                 <StrikethroughIcon />
-//             </Toolbar.ToggleItem>
-//         </Toolbar.ToggleGroup>
-//         <Toolbar.Separator className="mx-2.5 w-px bg-mauve6" />
-//         <Toolbar.ToggleGroup
-//             type="single"
-//             defaultValue="center"
-//             aria-label="Text alignment"
-//         >
-//             <Toolbar.ToggleItem
-//                 className="ml-0.5 inline-flex h-[25px] flex-shrink-0 flex-grow-0 basis-auto items-center justify-center rounded bg-white px-[5px] text-[13px] leading-none text-mauve11 outline-none first:ml-0 hover:bg-violet3 hover:text-violet11 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7 data-[state=on]:bg-violet5 data-[state=on]:text-violet11"
-//                 value="left"
-//                 aria-label="Left aligned"
-//             >
-//                 <TextAlignLeftIcon />
-//             </Toolbar.ToggleItem>
-//             <Toolbar.ToggleItem
-//                 className="ml-0.5 inline-flex h-[25px] flex-shrink-0 flex-grow-0 basis-auto items-center justify-center rounded bg-white px-[5px] text-[13px] leading-none text-mauve11 outline-none first:ml-0 hover:bg-violet3 hover:text-violet11 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7 data-[state=on]:bg-violet5 data-[state=on]:text-violet11"
-//                 value="center"
-//                 aria-label="Center aligned"
-//             >
-//                 <TextAlignCenterIcon />
-//             </Toolbar.ToggleItem>
-//             <Toolbar.ToggleItem
-//                 className="ml-0.5 inline-flex h-[25px] flex-shrink-0 flex-grow-0 basis-auto items-center justify-center rounded bg-white px-[5px] text-[13px] leading-none text-mauve11 outline-none first:ml-0 hover:bg-violet3 hover:text-violet11 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7 data-[state=on]:bg-violet5 data-[state=on]:text-violet11"
-//                 value="right"
-//                 aria-label="Right aligned"
-//             >
-//                 <TextAlignRightIcon />
-//             </Toolbar.ToggleItem>
-//         </Toolbar.ToggleGroup>
-//         <Toolbar.Separator className="mx-2.5 w-px bg-mauve6" />
-//         <Toolbar.Link
-//             className="ml-0.5 hidden h-[25px] flex-shrink-0 flex-grow-0 basis-auto items-center justify-center rounded bg-transparent bg-white px-[5px] text-[13px] leading-none text-mauve11 outline-none first:ml-0 hover:cursor-pointer hover:bg-transparent hover:bg-violet3 hover:text-violet11 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7 data-[state=on]:bg-violet5 data-[state=on]:text-violet11 sm:inline-flex"
-//             href="#"
-//             target="_blank"
-//             style={{ marginRight: 10 }}
-//         >
-//             Edited 2 hours ago
-//         </Toolbar.Link>
-//         <Toolbar.Button
-//             className="inline-flex h-[25px] flex-shrink-0 flex-grow-0 basis-auto items-center justify-center rounded bg-violet9 px-2.5 text-[13px] leading-none text-white outline-none hover:bg-violet10 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7"
-//             style={{ marginLeft: "auto" }}
-//         >
-//             Share
-//         </Toolbar.Button>
-//     </Toolbar.Root>
-// );
-//
-// export default Toolbar;
+import { Toolbar } from "radix-ui";
+import { Tooltip } from "@radix-ui/themes";
+import {
+    Trash2,
+    Copy,
+    Palette,
+    Square,
+    Sparkles,
+    Minus,
+    AlignHorizontalJustifyStart,
+    AlignHorizontalJustifyCenter,
+    AlignHorizontalJustifyEnd,
+} from "lucide-react";
+import useEditorState from "../store/EditorState.ts";
+import Konva from "konva";
+
+export interface SelectionToolbarProps {
+    x: number;
+    y: number;
+}
+
+export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
+    const shapes = useEditorState((s) => s.shapes);
+    const selectedIds = useEditorState((s) => s.selectedIds);
+    const deleteShapes = useEditorState((s) => s.deleteShapes);
+    const setSelectedIds = useEditorState((s) => s.setSelectedIds);
+    const updateShape = useEditorState((s) => s.updateShape);
+    const addShape = useEditorState((s) => s.addShape);
+    const stageWidth = useEditorState((s) => s.stage.size.width);
+
+    // Inspect the first selected shape to reflect active toggle states
+    const primaryShape = shapes.find((s) => s.id === selectedIds[0]);
+
+    // 1. Multiple ToggleGroup values (active styles on selected shape)
+    const activeStyles: string[] = [];
+    if (primaryShape?.props?.strokeWidth) activeStyles.push("stroke");
+    if (Array.isArray(primaryShape?.props?.dash) && primaryShape.props.dash.length > 0) {
+        activeStyles.push("dashed");
+    }
+    if (primaryShape?.props?.shadowBlur) activeStyles.push("shadow");
+
+    const handleStyleToggle = (values: string[]) => {
+        const hasStroke = values.includes("stroke");
+        const hasDashed = values.includes("dashed");
+        const hasShadow = values.includes("shadow");
+
+        selectedIds.forEach((id) => {
+            const shape = useEditorState.getState().shapes.find((s) => s.id === id);
+            if (!shape) return;
+
+            updateShape(id, {
+                props: {
+                    ...shape.props,
+                    stroke: hasStroke || hasDashed ? "#ffffff" : undefined,
+                    strokeWidth: hasStroke || hasDashed ? 2 : 0,
+                    dash: hasDashed ? [6, 6] : [],
+                    shadowColor: hasShadow ? "rgba(0,0,0,0.6)" : undefined,
+                    shadowBlur: hasShadow ? 12 : 0,
+                    shadowOffsetY: hasShadow ? 4 : 0,
+                },
+            });
+        });
+    };
+
+    // 2. Single ToggleGroup value (horizontal alignment on canvas)
+    const handleAlign = (alignment: string) => {
+        if (!alignment) return;
+
+        selectedIds.forEach((id) => {
+            const shape = useEditorState.getState().shapes.find((s) => s.id === id);
+            if (!shape) return;
+
+            const width =
+                shape.type === "Rect"
+                    ? Number(shape.props.width ?? 100) * shape.scaleX
+                    : Number(shape.props.radius ?? 50) * 2 * shape.scaleX;
+
+            const offset = shape.type === "Circle" ? width / 2 : 0;
+
+            let nextX = shape.x;
+            if (alignment === "left") nextX = 24 + offset;
+            if (alignment === "center") nextX = stageWidth / 2 - width / 2 + offset;
+            if (alignment === "right") nextX = stageWidth - width - 24 + offset;
+
+            updateShape(id, { x: nextX });
+        });
+    };
+
+    const handleRandomColor = () => {
+        const newColor = Konva.Util.getRandomColor();
+        selectedIds.forEach((id) => {
+            const shape = useEditorState.getState().shapes.find((s) => s.id === id);
+            if (shape) {
+                updateShape(id, {
+                    props: { ...shape.props, fill: newColor },
+                });
+            }
+        });
+    };
+
+    const handleDuplicate = () => {
+        const newIds: string[] = [];
+        selectedIds.forEach((id) => {
+            const orig = useEditorState.getState().shapes.find((s) => s.id === id);
+            if (!orig) return;
+            const copyId = crypto.randomUUID();
+            newIds.push(copyId);
+            addShape({
+                ...orig,
+                id: copyId,
+                x: orig.x + 20,
+                y: orig.y + 20,
+                props: { ...orig.props },
+            });
+        });
+        setSelectedIds(newIds);
+    };
+
+    const handleDelete = () => {
+        deleteShapes(selectedIds);
+        setSelectedIds([]);
+    };
+
+    const itemClass =
+        "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded text-[var(--gray-11)] outline-none hover:bg-[var(--gray-a4)] hover:text-[var(--gray-12)] focus-visible:ring-2 focus-visible:ring-[var(--accent-8)] data-[state=on]:bg-[var(--accent-a4)] data-[state=on]:text-[var(--accent-11)]";
+
+    return (
+        <Toolbar.Root
+            aria-label="Shape formatting options"
+            className="flex min-w-max items-center gap-1 p-1.5"
+            style={{
+                position: "absolute",
+                left: `${x}px`,
+                top: `${y}px`,
+                transform: "translateX(-50%)",
+                zIndex: 50,
+                backgroundColor: "var(--color-panel-solid)",
+                border: "1px solid var(--gray-a6)",
+                borderRadius: "var(--radius-4)",
+                boxShadow: "var(--shadow-4)",
+            }}
+        >
+            {/* Fill Color */}
+            <Tooltip content="Random Fill">
+                <Toolbar.Button onClick={handleRandomColor} className={itemClass} aria-label="Random Fill">
+                    <Palette size={15} />
+                </Toolbar.Button>
+            </Tooltip>
+
+            <Toolbar.Separator className="mx-1 h-4 w-px bg-[var(--gray-a6)]" />
+
+
+            {/* Multiple ToggleGroup: Border, Dashed, Shadow */}
+            <Toolbar.ToggleGroup
+                type="multiple"
+                value={activeStyles}
+                onValueChange={handleStyleToggle}
+                className="flex items-center gap-0.5"
+                aria-label="Shape styles"
+            >
+                <Tooltip content="Toggle Border">
+                    <Toolbar.ToggleItem value="stroke" className={itemClass} aria-label="Border">
+                        <Square size={15} />
+                    </Toolbar.ToggleItem>
+                </Tooltip>
+
+                <Tooltip content="Dashed Border">
+                    <Toolbar.ToggleItem value="dashed" className={itemClass} aria-label="Dashed">
+                        <Minus size={15} />
+                    </Toolbar.ToggleItem>
+                </Tooltip>
+
+                <Tooltip content="Drop Shadow">
+                    <Toolbar.ToggleItem value="shadow" className={itemClass} aria-label="Shadow">
+                        <Sparkles size={15} />
+                    </Toolbar.ToggleItem>
+                </Tooltip>
+            </Toolbar.ToggleGroup>
+
+            <Toolbar.Separator className="mx-1 h-4 w-px bg-[var(--gray-a6)]" />
+
+            {/* Single ToggleGroup: Canvas Alignment */}
+            <Toolbar.ToggleGroup
+                type="single"
+                onValueChange={handleAlign}
+                className="flex items-center gap-0.5"
+                aria-label="Canvas alignment"
+            >
+                <Tooltip content="Align Left">
+                    <Toolbar.ToggleItem value="left" className={itemClass} aria-label="Align Left">
+                        <AlignHorizontalJustifyStart size={15} />
+                    </Toolbar.ToggleItem>
+                </Tooltip>
+
+                <Tooltip content="Align Center">
+                    <Toolbar.ToggleItem value="center" className={itemClass} aria-label="Align Center">
+                        <AlignHorizontalJustifyCenter size={15} />
+                    </Toolbar.ToggleItem>
+                </Tooltip>
+
+                <Tooltip content="Align Right">
+                    <Toolbar.ToggleItem value="right" className={itemClass} aria-label="Align Right">
+                        <AlignHorizontalJustifyEnd size={15} />
+                    </Toolbar.ToggleItem>
+                </Tooltip>
+            </Toolbar.ToggleGroup>
+
+            <Toolbar.Separator className="mx-1 h-4 w-px bg-[var(--gray-a6)]" />
+
+            {/* Action Buttons: Duplicate & Delete */}
+            <Tooltip content="Duplicate">
+                <Toolbar.Button onClick={handleDuplicate} className={itemClass} aria-label="Duplicate">
+                    <Copy size={15} />
+                </Toolbar.Button>
+            </Tooltip>
+
+            <Tooltip content="Delete (Del)">
+                <Toolbar.Button
+                    onClick={handleDelete}
+                    className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded text-red-500 outline-none hover:bg-red-500/15 focus-visible:ring-2 focus-visible:ring-red-500"
+                    aria-label="Delete"
+                >
+                    <Trash2 size={15} />
+                </Toolbar.Button>
+            </Tooltip>
+        </Toolbar.Root>
+    );
+}

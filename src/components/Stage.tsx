@@ -1,18 +1,23 @@
-import {Stage, Layer, Rect, Transformer} from "react-konva";
-import {useEffect, useRef, useState} from "react";
-import ToolTip, {TOOLS, ToolType} from "./ToolTip.tsx";
+import {Stage, Layer, Rect, Transformer, Line} from "react-konva";
+import {useCallback, useEffect, useRef, useState} from "react";
+import ToolTip from "./ToolTip.tsx";
+import {TOOLS, ToolType} from "../store/EditorState.ts";
 import useEditorState, {BaseShape} from "../store/EditorState.ts";
 import Konva from "konva";
 import ShapeItem from "./ShapeItem.tsx";
+import SelectionToolbar from "../components/ToolBar.tsx"
 
 
 export default function StageKonva() {
     const containerRef = useRef<HTMLDivElement>(null);
     const stageSize = useEditorState((s) => s.stage.size);
     const stageResize = useEditorState((s) => s.stageResize);
-    const [activeTool, setActiveTool] = useState<ToolType>(TOOLS.CURSOR);
     const selectedIds = useEditorState((s) => s.selectedIds);
     const setSelectedIds = useEditorState((s) => s.setSelectedIds);
+    const activeTool = useEditorState((s) => s.activeTool);
+    const setActiveTool = useEditorState((s) => s.setActiveTool);
+    const isDrawingRef = useRef(false);
+    const [draftPoints, setDraftPoints] = useState<number[]>([]);
     const [selectionRect, setSelectionRect] = useState({
         visible: false,
         x1: 0,
@@ -20,6 +25,11 @@ export default function StageKonva() {
         x2: 0,
         y2: 0,
     });
+    const [toolbarPos, setToolbarPos] = useState<{
+        visible: boolean;
+        x: number;
+        y: number;
+    }>({visible: false, x: 0, y: 0});
     const stageRef = useRef<Konva.Stage>(null);
     const trRef = useRef<Konva.Transformer>(null);
 
@@ -69,27 +79,6 @@ export default function StageKonva() {
         setActiveTool(TOOLS.CURSOR); // Switch back to cursor so you can drag it immediately
     };
 
-    const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
-        if (e.target === e.target.getStage()) {
-            setSelectedIds([]);
-        }
-
-        if (activeTool !== TOOLS.SELECT) return;
-        if (e.target !== e.target.getStage()) return;
-        const pos = e.target.getStage()?.getPointerPosition();
-        if (!pos) return;
-
-        setSelectedIds([]);
-        setSelectionRect({
-            visible: true,
-            x1: pos.x,
-            y1: pos.y,
-            x2: pos.x,
-            y2: pos.y,
-        });
-
-    }
-
     useEffect(() => {
         const tr = trRef.current;
         const stage = stageRef.current;
@@ -103,12 +92,49 @@ export default function StageKonva() {
         tr.getLayer()?.batchDraw();
     }, [selectedIds, shapes]);
 
-    const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
-        if (!selectionRect.visible) return;
+    const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+        if (e.target === e.target.getStage()) {
+            setSelectedIds([]);
+        }
+
+
+        if (e.target !== e.target.getStage()) return;
 
         const pos = e.target.getStage()?.getPointerPosition();
         if (!pos) return;
 
+        if (activeTool === TOOLS.PENCIL) {
+            isDrawingRef.current = true;
+            setSelectedIds([]);
+            setDraftPoints([pos.x, pos.y]);
+            return;
+        }
+
+
+        if (activeTool !== TOOLS.SELECT) return;
+
+
+        setSelectedIds([]);
+        setSelectionRect({
+            visible: true,
+            x1: pos.x,
+            y1: pos.y,
+            x2: pos.x,
+            y2: pos.y,
+        });
+
+    }
+
+    const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+        const pos = e.target.getStage()?.getPointerPosition();
+        if (!pos) return;
+
+        if (activeTool === TOOLS.PENCIL && isDrawingRef.current) {
+            setDraftPoints((prev) => [...prev, pos.x, pos.y]);
+            return;
+        }
+
+        if (!selectionRect.visible) return;
         setSelectionRect((prev) => ({
             ...prev,
             x2: pos.x,
@@ -117,6 +143,42 @@ export default function StageKonva() {
     }
 
     const handleMouseUp = (e: Konva.KonvaEventObject<MouseEvent>) => {
+        if (activeTool === TOOLS.PENCIL && isDrawingRef.current) {
+            isDrawingRef.current = false;
+
+            if (draftPoints.length >= 4) {
+                let minX = Infinity;
+                let minY = Infinity;
+                for (let i = 0; i < draftPoints.length; i += 2) {
+                    if (draftPoints[i] < minX) minX = draftPoints[i];
+                    if (draftPoints[i + 1] < minY) minY = draftPoints[i + 1];
+                }
+
+                const normalizedPoints = draftPoints.map((val, idx) =>
+                    idx % 2 === 0 ? val - minX : val - minY
+                );
+
+                addShape({
+                    id: crypto.randomUUID(),
+                    type: "Line",
+                    x: minX,
+                    y: minY,
+                    rotation: 0,
+                    scaleX: 1,
+                    scaleY: 1,
+                    props: {
+                        points: normalizedPoints,
+                        stroke: "#ffffff",
+                        strokeWidth: 3,
+                    },
+                });
+            }
+
+            setDraftPoints([]);
+            return;
+        }
+
+
         if (!selectionRect.visible) return;
         const stage = e.target.getStage();
         if (!stage) return;
@@ -142,6 +204,38 @@ export default function StageKonva() {
         }))
     }
 
+    const updateToolbarPosition = useCallback(() => {
+        const tr = trRef.current;
+        if (!tr || selectedIds.length === 0) {
+            setToolbarPos((prev) => (prev.visible ? {...prev, visible: false} : prev));
+            return;
+        }
+
+        const box = tr.getClientRect();
+        setToolbarPos({
+            visible: true,
+            x: box.x + box.width / 2, // Centered horizontally above selection
+            y: Math.max(16, box.y - 48), // 48px above top edge (clamped so it never goes off-screen)
+        });
+    }, [selectedIds]);
+
+
+    // toolbar
+
+    useEffect(() => {
+        const tr = trRef.current;
+        const stage = stageRef.current;
+        if (!tr || !stage) return;
+
+        const nodes = selectedIds
+            .map((id) => stage.findOne(`#${id}`))
+            .filter((node): node is Konva.Node => Boolean(node));
+
+        tr.nodes(nodes);
+        tr.getLayer()?.batchDraw();
+        updateToolbarPosition();
+    }, [selectedIds, shapes, updateToolbarPosition]);
+
     return (
         <div ref={containerRef} className="relative h-screen w-full overflow-hidden">
             <Stage
@@ -152,16 +246,29 @@ export default function StageKonva() {
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
             >
-                <Layer>
+                <Layer onDragMove={updateToolbarPosition}>
                     {
                         shapes.map((el) => (
-                            <ShapeItem el={el} activeTool={activeTool} onUpdate={updateShape} />
+                            <ShapeItem key={el.id} el={el} activeTool={activeTool} onUpdate={updateShape}/>
                         ))
                     }
+
+                    {draftPoints.length > 0 && (
+                        <Line
+                            points={draftPoints}
+                            stroke="#ffffff"
+                            strokeWidth={3}
+                            tension={0.4}
+                            lineCap="round"
+                            lineJoin="round"
+                            listening={false}
+                        />
+                    )}
 
                     <Transformer
                         ref={trRef}
                         borderStroke="#3b82f6"
+                        onTransform={updateToolbarPosition}
                         borderStrokeWidth={1.5}
                         anchorFill="#ffffff"
                         anchorStroke="#3b82f6"
@@ -228,6 +335,10 @@ export default function StageKonva() {
                     )}
                 </Layer>
             </Stage>
+
+            {toolbarPos.visible && (
+                <SelectionToolbar x={toolbarPos.x} y={toolbarPos.y}/>
+            )}
 
             {/* Toolbar */}
             <div className="pointer-events-none absolute inset-x-0 bottom-6 z-50 flex justify-center">

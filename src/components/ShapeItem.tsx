@@ -1,8 +1,9 @@
-import { memo } from "react";
-import { Rect, Circle } from "react-konva";
+import {memo} from "react";
+import {Rect, Circle, Line} from "react-konva";
 import Konva from "konva";
-import useEditorState, { BaseShape } from "../store/EditorState.ts";
-import { TOOLS, ToolType } from "./ToolTip.tsx";
+import useEditorState, {BaseShape} from "../store/EditorState.ts";
+import {TOOLS, ToolType} from "../store/EditorState.ts";
+
 
 interface ShapeItemProps {
     el: BaseShape;
@@ -10,7 +11,7 @@ interface ShapeItemProps {
     onUpdate: (id: string, patch: Partial<BaseShape>) => void;
 }
 
-const ShapeItem = memo(function ShapeItem({ el, activeTool, onUpdate }: ShapeItemProps) {
+const ShapeItem = memo(function ShapeItem({el, activeTool, onUpdate}: ShapeItemProps) {
     const commonProps = {
         id: el.id,
         name: "shape",
@@ -22,7 +23,7 @@ const ShapeItem = memo(function ShapeItem({ el, activeTool, onUpdate }: ShapeIte
         strokeScaleEnabled: false,
         draggable: activeTool === TOOLS.CURSOR,
         onClick: (e: Konva.KonvaEventObject<MouseEvent>) => {
-            const { selectedIds, setSelectedIds } = useEditorState.getState();
+            const {selectedIds, setSelectedIds} = useEditorState.getState();
 
             if (e.evt.shiftKey) {
                 setSelectedIds(
@@ -58,6 +59,12 @@ const ShapeItem = memo(function ShapeItem({ el, activeTool, onUpdate }: ShapeIte
             return <Rect {...commonProps} />;
         case "Circle":
             return <Circle {...commonProps} />;
+        case  "Line":
+            return <Line {...commonProps}
+                         hitStrokeWidth={12}
+                         lineCap="round"
+                         lineJoin="round"
+                         tension={0.4}/>
         default:
             return null;
     }

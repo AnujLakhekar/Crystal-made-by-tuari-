@@ -3,7 +3,20 @@ import {subscribeWithSelector} from "zustand/middleware";
 import { enablePatches, produceWithPatches, applyPatches, Patch } from "immer";
 
 
+
 enablePatches();
+
+export enum TOOLS {
+    CURSOR = "CURSOR",
+    SELECT = "SELECT",
+    SHAPE = "SHAPE",
+    PENCIL = "PENCIL",
+}
+
+
+
+export type ToolType = `${TOOLS}`;
+
 
 export interface BaseShape {
     id: string;
@@ -25,7 +38,6 @@ export interface HistoryCommand {
 export interface EditorState {
     // Document state (tracked by undo/redo)
     shapes: BaseShape[];
-
     // Ephemeral UI state (NOT tracked by undo/redo)
     selectedIds: string[];
     stage: {
@@ -34,6 +46,8 @@ export interface EditorState {
             height: number;
         };
     };
+    activeTool: ToolType;
+    setActiveTool: (tool: ToolType) => void,
 
     // Undo / Redo Stacks
     past: HistoryCommand[];
@@ -98,6 +112,7 @@ const useEditorState = create<EditorState>()(
                 height: window.innerHeight,
             },
         },
+        activeTool: TOOLS.CURSOR,
 
         past: [],
         future: [],
@@ -105,6 +120,9 @@ const useEditorState = create<EditorState>()(
         canRedo: false,
 
         // --- Commands ---
+        setActiveTool: (tool: ToolType) => set({
+            activeTool: tool,
+        }),
         addShape: (shape) =>
             executeCommand(set, `Add ${shape.type}`, (draft) => {
                 draft.push(shape);

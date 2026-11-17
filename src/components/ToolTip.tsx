@@ -1,16 +1,8 @@
-import {Flex, IconButton, Popover, Text, Tooltip} from "@radix-ui/themes";
 import {CursorArrowIcon, BoxIcon, SquareIcon, CircleIcon} from "@radix-ui/react-icons";
-import {Eclipse} from "lucide-react";
 import {useHistory} from "../hooks/useHistory.ts"
-import { Undo2, Redo2 } from "lucide-react";
-
-export enum TOOLS {
-    CURSOR = "CURSOR",
-    SELECT = "SELECT",
-    SHAPE = "SHAPE",
-}
-
-export type ToolType = `${TOOLS}`;
+import {Flex, IconButton, Popover, Separator, Text, Tooltip} from "@radix-ui/themes";
+import {Eclipse, Undo2, Redo2, Pencil, Paintbrush, StrokeLineJoinRound} from "lucide-react";
+import {TOOLS, ToolType} from "../store/EditorState.ts";
 
 export interface ToolTipProps {
     activeTool: ToolType | null;
@@ -47,6 +39,43 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape}: Too
                 </IconButton>
             </Tooltip>
 
+            <Tooltip content="Pencil">
+                <IconButton
+                    size="2"
+                    variant={activeTool === TOOLS.PENCIL ? "solid" : "soft"}
+                    color={activeTool === TOOLS.PENCIL ? undefined : "gray"}
+                    onClick={() => handleChangeState(TOOLS.PENCIL)}
+                >
+                    <Pencil size={16}/>
+                </IconButton>
+            </Tooltip>
+
+            <Tooltip className={``} content="Painting Tools">
+                <Flex direction="row" align="center" gap={"2"}>
+                    <Separator orientation="vertical" size="2"/>
+
+
+                    <IconButton
+                        size="2"
+                        variant={activeTool === TOOLS.PENCIL ? "solid" : "soft"}
+                        color={activeTool === TOOLS.PENCIL ? "gold" : "gray"}
+                    >
+                        <Paintbrush color={"yellow"} size={16}/>
+                    </IconButton>
+
+
+                    <IconButton
+                        size="2"
+                        variant={activeTool === TOOLS.PENCIL ? "solid" : "soft"}
+                        color={activeTool === TOOLS.PENCIL ? "brown" : "gray"}
+                    >
+                        <StrokeLineJoinRound size={20}/>
+                    </IconButton>
+
+                    <Separator orientation="vertical" size="2"/>
+                </Flex>
+            </Tooltip>
+
             <Tooltip content="Select">
                 <IconButton
                     size="2"
@@ -70,7 +99,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape}: Too
                     </IconButton>
                 </Popover.Trigger>
 
-                <Popover.Content side="top" sideOffset={12} size="1">
+                <Popover.Content side="top" sideOffset={20} size="1">
                     <Flex direction="column" gap="2">
                         <Text size="1" weight="bold" color="gray">
                             Add Shape
@@ -98,6 +127,8 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape}: Too
                     </Flex>
                 </Popover.Content>
             </Popover.Root>
+
+            <Separator orientation="vertical" size="2"/>
 
             <Tooltip content="Undo (Ctrl+Z)">
                 <IconButton
