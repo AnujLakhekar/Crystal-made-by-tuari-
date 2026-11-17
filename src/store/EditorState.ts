@@ -1,7 +1,6 @@
 import {create} from "zustand";
 import {subscribeWithSelector} from "zustand/middleware";
-import { enablePatches, produceWithPatches, applyPatches, Patch } from "immer";
-
+import {enablePatches, produceWithPatches, applyPatches, Patch} from "immer";
 
 
 enablePatches();
@@ -13,6 +12,12 @@ export enum TOOLS {
     PENCIL = "PENCIL",
 }
 
+
+export interface BrushConfig {
+    stroke: string;
+    strokeWidth: number;
+    tension: number;
+}
 
 
 export type ToolType = `${TOOLS}`;
@@ -46,6 +51,8 @@ export interface EditorState {
             height: number;
         };
     };
+    brushConfig: BrushConfig;
+    setBrushConfig: (patch: Partial<BrushConfig>) => void;
     activeTool: ToolType;
     setActiveTool: (tool: ToolType) => void,
 
@@ -89,7 +96,7 @@ function executeCommand(
 
         const nextPast = [
             ...state.past.slice(-(MAX_HISTORY - 1)),
-            { label, patches, inversePatches },
+            {label, patches, inversePatches},
         ];
 
         return {
@@ -113,6 +120,15 @@ const useEditorState = create<EditorState>()(
             },
         },
         activeTool: TOOLS.CURSOR,
+        brushConfig: {
+            stroke: "#ffffff",
+            strokeWidth: 4,
+            tension: 0.4,
+        },
+        setBrushConfig: (patch) =>
+            set((state) => ({
+                brushConfig: {...state.brushConfig, ...patch},
+            })),
 
         past: [],
         future: [],
@@ -192,13 +208,13 @@ const useEditorState = create<EditorState>()(
             }),
 
         // --- Ephemeral UI Actions ---
-        setSelectedIds: (ids) => set({ selectedIds: ids }),
+        setSelectedIds: (ids) => set({selectedIds: ids}),
 
         stageResize: (width = window.innerWidth, height = window.innerHeight) =>
             set((state) => ({
                 stage: {
                     ...state.stage,
-                    size: { width, height },
+                    size: {width, height},
                 },
             })),
     }))

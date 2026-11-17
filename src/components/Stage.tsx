@@ -18,6 +18,7 @@ export default function StageKonva() {
     const setActiveTool = useEditorState((s) => s.setActiveTool);
     const isDrawingRef = useRef(false);
     const [draftPoints, setDraftPoints] = useState<number[]>([]);
+    const brushConfig = useEditorState((s) => s.brushConfig);
     const [selectionRect, setSelectionRect] = useState({
         visible: false,
         x1: 0,
@@ -168,8 +169,9 @@ export default function StageKonva() {
                     scaleY: 1,
                     props: {
                         points: normalizedPoints,
-                        stroke: "#ffffff",
-                        strokeWidth: 3,
+                        stroke: brushConfig.stroke,
+                        strokeWidth: brushConfig.strokeWidth,
+                        tension: brushConfig.tension,
                     },
                 });
             }
@@ -256,9 +258,9 @@ export default function StageKonva() {
                     {draftPoints.length > 0 && (
                         <Line
                             points={draftPoints}
-                            stroke="#ffffff"
-                            strokeWidth={3}
-                            tension={0.4}
+                            stroke={brushConfig.stroke}
+                            strokeWidth={brushConfig.strokeWidth}
+                            tension={brushConfig.tension}
                             lineCap="round"
                             lineJoin="round"
                             listening={false}
