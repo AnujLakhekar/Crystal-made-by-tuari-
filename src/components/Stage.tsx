@@ -79,6 +79,8 @@ export default function StageKonva() {
         setActiveTool(tool);
     }, [setActiveTool]);
 
+
+
     return (
         <StageContextMenu onAddShape={handleAddShape}>
             <div ref={containerRef} className="relative h-screen w-full overflow-hidden">
@@ -99,6 +101,7 @@ export default function StageKonva() {
                                 el={el}
                                 activeTool={activeTool}
                                 onUpdate={updateShape}
+
                             />
                         ))}
 

@@ -1,6 +1,6 @@
 import { ContextMenu } from "radix-ui";
-import { ChevronRightIcon, DotFilledIcon } from "@radix-ui/react-icons";
-import useEditorState, { TOOLS, ToolType } from "../store/EditorState.ts";
+import { ChevronRightIcon } from "@radix-ui/react-icons";
+import useEditorState from "../store/EditorState.ts";
 import { useStageContextMenu } from "../hooks/useStageContextMenu.ts";
 
 interface StageContextMenuProps {
@@ -20,7 +20,7 @@ const shortcutClass =
  * and delete.
  */
 export function StageContextMenu({ children, onAddShape }: StageContextMenuProps) {
-    const { handleDuplicate, handleSetTool } = useStageContextMenu();
+    const { handleDuplicate } = useStageContextMenu();
 
     const canUndo = useEditorState((s) => s.canUndo);
     const canRedo = useEditorState((s) => s.canRedo);
@@ -31,7 +31,7 @@ export function StageContextMenu({ children, onAddShape }: StageContextMenuProps
     const deleteShapes = useEditorState((s) => s.deleteShapes);
     const bringToFront = useEditorState((s) => s.bringToFront);
     const sendToBack = useEditorState((s) => s.sendToBack);
-    const activeTool = useEditorState((s) => s.activeTool);
+
 
     const hasSelection = selectedIds.length > 0;
 
@@ -117,39 +117,6 @@ export function StageContextMenu({ children, onAddShape }: StageContextMenuProps
                             </ContextMenu.SubContent>
                         </ContextMenu.Portal>
                     </ContextMenu.Sub>
-
-                    <ContextMenu.Separator className="my-1.5 h-px bg-[var(--gray-a6)]"/>
-
-                    <ContextMenu.Label
-                        className="pl-[26px] text-[11px] font-medium leading-[24px] text-[var(--gray-10)]">
-                        Active Tool
-                    </ContextMenu.Label>
-                    <ContextMenu.RadioGroup
-                        value={activeTool}
-                        onValueChange={(val) => handleSetTool(val as ToolType)}
-                    >
-                        <ContextMenu.RadioItem className={menuItemClass} value={TOOLS.CURSOR}>
-                            <ContextMenu.ItemIndicator
-                                className="absolute left-0 inline-flex w-[26px] items-center justify-center">
-                                <DotFilledIcon/>
-                            </ContextMenu.ItemIndicator>
-                            Cursor
-                        </ContextMenu.RadioItem>
-                        <ContextMenu.RadioItem className={menuItemClass} value={TOOLS.SELECT}>
-                            <ContextMenu.ItemIndicator
-                                className="absolute left-0 inline-flex w-[26px] items-center justify-center">
-                                <DotFilledIcon/>
-                            </ContextMenu.ItemIndicator>
-                            Select Box
-                        </ContextMenu.RadioItem>
-                        <ContextMenu.RadioItem className={menuItemClass} value={TOOLS.PENCIL}>
-                            <ContextMenu.ItemIndicator
-                                className="absolute left-0 inline-flex w-[26px] items-center justify-center">
-                                <DotFilledIcon/>
-                            </ContextMenu.ItemIndicator>
-                            Pencil
-                        </ContextMenu.RadioItem>
-                    </ContextMenu.RadioGroup>
 
                     <ContextMenu.Separator className="my-1.5 h-px bg-[var(--gray-a6)]"/>
 

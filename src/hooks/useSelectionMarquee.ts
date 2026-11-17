@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import Konva from "konva";
-import useEditorState, { TOOLS } from "../store/EditorState.ts";
+import useEditorState, {TOOLS} from "../store/EditorState.ts";
 
 interface SelectionRect {
     visible: boolean;
@@ -23,12 +23,12 @@ export function useSelectionMarquee() {
         y2: 0,
     });
 
-    const activeTool = useEditorState((s) => s.activeTool);
     const setSelectedIds = useEditorState((s) => s.setSelectedIds);
+    const activeTool = useEditorState((s) => s.activeTool);
 
     const handleMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-        if (activeTool !== TOOLS.SELECT) return;
         if (e.target !== e.target.getStage()) return;
+        if (activeTool == TOOLS.PENCIL) return;
 
         const pos = e.target.getStage()?.getPointerPosition();
         if (!pos) return;
@@ -44,6 +44,7 @@ export function useSelectionMarquee() {
     }, [activeTool, setSelectedIds]);
 
     const handleMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+        if (activeTool == TOOLS.PENCIL) return;
         if (!selectionRect.visible) return;
         const pos = e.target.getStage()?.getPointerPosition();
         if (!pos) return;
@@ -56,8 +57,8 @@ export function useSelectionMarquee() {
     }, [selectionRect.visible]);
 
     const handleMouseUp = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+        if (activeTool == TOOLS.PENCIL) return;
         if (!selectionRect.visible) return;
-
         const stage = e.target.getStage();
         if (!stage) {
             setSelectionRect((prev) => ({ ...prev, visible: false }));

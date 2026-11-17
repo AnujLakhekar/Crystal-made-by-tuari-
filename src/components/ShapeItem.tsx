@@ -23,7 +23,9 @@ const ShapeItem = memo(function ShapeItem({el, activeTool, onUpdate}: ShapeItemP
         strokeScaleEnabled: false,
         draggable: activeTool === TOOLS.CURSOR,
         onClick: (e: Konva.KonvaEventObject<MouseEvent>) => {
-            const {selectedIds, setSelectedIds} = useEditorState.getState();
+            const {selectedIds, setSelectedIds, setActiveTool} = useEditorState.getState();
+
+            setActiveTool(TOOLS.CURSOR)
 
             if (e.evt.shiftKey) {
                 setSelectedIds(
