@@ -8,7 +8,7 @@ export default function App() {
 
     return (
         <Grid
-            columns={{initial: "1", md: "250px 1fr"}}
+            columns={{initial: "1", md: "auto 1fr"}}
             rows="1"
             height="100vh"
             width="100vw"
@@ -16,7 +16,7 @@ export default function App() {
         >
             <Sidebar/>
             <Box ref={stageWrapperRef} width="100%" height="100%" className="overflow-hidden">
-                <StageKonvas width={window.innerWidth} height={window.innerHeight}/>
+                <StageKonvas/>
             </Box>
         </Grid>
     );
