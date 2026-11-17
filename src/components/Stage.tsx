@@ -1,11 +1,12 @@
-import {Stage, Layer, Rect, Circle, Transformer} from "react-konva";
+import {Stage, Layer, Rect, Transformer} from "react-konva";
 import {useEffect, useRef, useState} from "react";
 import ToolTip, {TOOLS, ToolType} from "./ToolTip.tsx";
 import useEditorState, {BaseShape} from "../store/EditorState.ts";
 import Konva from "konva";
+import ShapeItem from "./ShapeItem.tsx";
 
 
-export default function StageKonvas() {
+export default function StageKonva() {
     const containerRef = useRef<HTMLDivElement>(null);
     const stageSize = useEditorState((s) => s.stage.size);
     const stageResize = useEditorState((s) => s.stageResize);
@@ -44,58 +45,6 @@ export default function StageKonvas() {
 
         return () => window.removeEventListener("resize", handleResize);
     }, [stageResize]);
-
-    function shapeRender(el: BaseShape) {
-        const commonProps = {
-            id: el.id,
-            name: "shape",
-            x: el.x,
-            y: el.y,
-            rotation: el.rotation,
-            scaleX: el.scaleX,
-            scaleY: el.scaleY,
-            strokeScaleEnabled: false,
-            draggable: activeTool === TOOLS.CURSOR,
-            onClick: (e: Konva.KonvaEventObject<MouseEvent>) => {
-                // Click to select single shape (Shift+Click to toggle multi-select)
-                if (e.evt.shiftKey) {
-                    setSelectedIds(
-                        selectedIds.includes(el.id)
-                            ? selectedIds.filter((id) => id !== el.id)
-                            : [...selectedIds, el.id]
-                    );
-                } else {
-                    setSelectedIds([el.id]);
-                }
-            },
-            onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => {
-                updateShape(el.id, {
-                    x: e.target.x(),
-                    y: e.target.y(),
-                });
-            },
-            onTransformEnd: (e: Konva.KonvaEventObject<Event>) => {
-                const node = e.target;
-                updateShape(el.id, {
-                    x: node.x(),
-                    y: node.y(),
-                    rotation: node.rotation(),
-                    scaleX: node.scaleX(),
-                    scaleY: node.scaleY(),
-                });
-            },
-            ...el.props,
-        };
-
-        switch (el.type) {
-            case "Rect":
-                return <Rect key={el.id} {...commonProps} />;
-            case "Circle":
-                return <Circle key={el.id} {...commonProps} />;
-            default:
-                return null;
-        }
-    }
 
     function handleActiveTools(tool: ToolType) {
         setActiveTool(tool);
@@ -204,7 +153,11 @@ export default function StageKonvas() {
                 onMouseUp={handleMouseUp}
             >
                 <Layer>
-                    {shapes.map((el) => shapeRender(el))}
+                    {
+                        shapes.map((el) => (
+                            <ShapeItem el={el} activeTool={activeTool} onUpdate={updateShape} />
+                        ))
+                    }
 
                     <Transformer
                         ref={trRef}
@@ -276,7 +229,7 @@ export default function StageKonvas() {
                 </Layer>
             </Stage>
 
-            {/* Tool bar */}
+            {/* Toolbar */}
             <div className="pointer-events-none absolute inset-x-0 bottom-6 z-50 flex justify-center">
                 <div className="pointer-events-auto">
                     <ToolTip

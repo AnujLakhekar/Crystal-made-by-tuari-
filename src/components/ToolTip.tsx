@@ -1,6 +1,8 @@
 import {Flex, IconButton, Popover, Text, Tooltip} from "@radix-ui/themes";
 import {CursorArrowIcon, BoxIcon, SquareIcon, CircleIcon} from "@radix-ui/react-icons";
 import {Eclipse} from "lucide-react";
+import {useHistory} from "../hooks/useHistory.ts"
+import { Undo2, Redo2 } from "lucide-react";
 
 export enum TOOLS {
     CURSOR = "CURSOR",
@@ -17,6 +19,9 @@ export interface ToolTipProps {
 }
 
 export default function ToolTip({activeTool, handleChangeState, onAddShape}: ToolTipProps) {
+    const {canUndo, canRedo, undo, redo} = useHistory(true);
+
+
     return (
         <Flex
             align="center"
@@ -93,6 +98,30 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape}: Too
                     </Flex>
                 </Popover.Content>
             </Popover.Root>
+
+            <Tooltip content="Undo (Ctrl+Z)">
+                <IconButton
+                    size="2"
+                    variant="soft"
+                    color="gray"
+                    disabled={!canUndo}
+                    onClick={undo}
+                >
+                    <Undo2 size={16}/>
+                </IconButton>
+            </Tooltip>
+
+            <Tooltip content="Redo (Ctrl+Y)">
+                <IconButton
+                    size="2"
+                    variant="soft"
+                    color="gray"
+                    disabled={!canRedo}
+                    onClick={redo}
+                >
+                    <Redo2 size={16}/>
+                </IconButton>
+            </Tooltip>
         </Flex>
     );
 }

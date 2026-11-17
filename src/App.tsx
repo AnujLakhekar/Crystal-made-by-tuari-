@@ -1,7 +1,8 @@
 import { useRef} from "react";
 import {Box, Grid} from "@radix-ui/themes";
-import StageKonvas from "./components/Stage.tsx";
+import StageKonva from "./components/Stage.tsx";
 import Sidebar from "./components/Sidebar.tsx";
+
 
 export default function App() {
     const stageWrapperRef = useRef<HTMLDivElement>(null);
@@ -16,7 +17,7 @@ export default function App() {
         >
             <Sidebar/>
             <Box ref={stageWrapperRef} width="100%" height="100%" className="overflow-hidden">
-                <StageKonvas/>
+                <StageKonva/>
             </Box>
         </Grid>
     );
