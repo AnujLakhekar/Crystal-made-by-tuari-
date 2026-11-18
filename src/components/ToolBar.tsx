@@ -31,8 +31,8 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
     const { isMobile } = useDevice();
 
     // Touch-friendly button size
-    const itemSize = isMobile ? 44 : 28;
-    const iconSize = isMobile ? 18 : 15;
+    const itemSize = isMobile ? 44 : 32;
+    const iconSize = isMobile ? 18 : 18;
 
     // Inspect the first selected shape to reflect active toggle states
     const primaryShape = shapes.find((s) => s.id === selectedIds[0]);
@@ -161,7 +161,7 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
                 type="multiple"
                 value={activeStyles}
                 onValueChange={handleStyleToggle}
-                className="flex items-center gap-0.5"
+                className="flex items-center gap-1"
                 aria-label="Shape styles"
             >
                 <Tooltip content="Toggle Border">
@@ -189,7 +189,7 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
             <Toolbar.ToggleGroup
                 type="single"
                 onValueChange={handleAlign}
-                className="flex items-center gap-0.5"
+                className="flex items-center gap-1"
                 aria-label="Canvas alignment"
             >
                 <Tooltip content="Align Left">
