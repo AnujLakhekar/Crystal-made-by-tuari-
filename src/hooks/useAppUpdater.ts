@@ -1,11 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
+import { isTauri } from "@tauri-apps/api/core";
 import { check, Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
-
-/** Returns true when running inside a Tauri webview (not a regular browser). */
-function isTauri(): boolean {
-    return typeof window !== "undefined" && !!window.__TAURI_INTERNALS__;
-}
 
 export function useAppUpdater(checkOnMount = true) {
     const [update, setUpdate] = useState<Update | null>(null);
