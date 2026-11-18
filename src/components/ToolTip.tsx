@@ -36,16 +36,16 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
     const setBrushConfig = useEditorState((s) => s.setBrushConfig);
 
     // Touch-friendly button size
-    const btnSize = isMobile ? "2" : "2";
-    const mobileBtnMin = 36; // px — smaller touch target that fits more per row
-    const mobileIcon = 16;   // px — icon size on mobile
+    const btnSize = "2";
+    const iconSize = isMobile ? 16 : 18;
+    const mobileBtnMin = 40; // px — touch target on mobile
 
     return (
         <Flex
             align="center"
             justify="center"
-            gap={isMobile ? "1" : "1"}
-            p={isMobile ? "2" : "2"}
+            gap={isMobile ? "1" : "2"}
+            p={isMobile ? "2" : "3"}
             style={{
                 width: isMobile ? undefined : "max-content",
                 maxWidth: isMobile ? "calc(100vw - 32px)" : undefined,
@@ -67,7 +67,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                             onClick={onToggleMobilePan}
                             style={{minWidth: mobileBtnMin, minHeight: mobileBtnMin}}
                         >
-                            <Hand size={mobileIcon}/>
+                            <Hand size={iconSize}/>
                         </IconButton>
                     </Tooltip>
                     <Separator orientation="vertical" size="2"/>
@@ -82,7 +82,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                     onClick={() => handleChangeState(TOOLS.CURSOR)}
                     style={isMobile ? {minWidth: mobileBtnMin, minHeight: mobileBtnMin} : undefined}
                 >
-                    <CursorArrowIcon width={mobileIcon} height={mobileIcon}/>
+                    <CursorArrowIcon width={iconSize} height={iconSize}/>
                 </IconButton>
             </Tooltip>
 
@@ -94,7 +94,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                     onClick={() => handleChangeState(TOOLS.PENCIL)}
                     style={isMobile ? {minWidth: mobileBtnMin, minHeight: mobileBtnMin} : undefined}
                 >
-                    <Pencil size={mobileIcon}/>
+                    <Pencil size={iconSize}/>
                 </IconButton>
             </Tooltip>
 
@@ -110,7 +110,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                                 <IconButton size={btnSize} variant="soft" color="gray"
                                     style={isMobile ? {minWidth: mobileBtnMin, minHeight: mobileBtnMin} : undefined}
                                 >
-                                    <Paintbrush color={brushConfig.stroke} size={mobileIcon}/>
+                                    <Paintbrush color={brushConfig.stroke} size={iconSize}/>
                                 </IconButton>
                             </Popover.Trigger>
                         </Tooltip>
@@ -171,7 +171,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                                 <IconButton size={btnSize} variant="soft" color="gray"
                                     style={isMobile ? {minWidth: mobileBtnMin, minHeight: mobileBtnMin} : undefined}
                                 >
-                                    <StrokeLineJoinRound size={mobileIcon}/>
+                                    <StrokeLineJoinRound size={iconSize}/>
                                 </IconButton>
                             </Popover.Trigger>
                         </Tooltip>
@@ -233,7 +233,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                     onClick={() => handleChangeState(TOOLS.SELECT)}
                     style={isMobile ? {minWidth: mobileBtnMin, minHeight: mobileBtnMin} : undefined}
                 >
-                    <BoxIcon width={mobileIcon} height={mobileIcon}/>
+                    <BoxIcon width={iconSize} height={iconSize}/>
                 </IconButton>
             </Tooltip>
 
@@ -246,7 +246,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                         onClick={() => handleChangeState(TOOLS.SHAPE)}
                         style={isMobile ? {minWidth: mobileBtnMin, minHeight: mobileBtnMin} : undefined}
                     >
-                        <Eclipse size={mobileIcon}/>
+                        <Eclipse size={iconSize}/>
                     </IconButton>
                 </Popover.Trigger>
 
@@ -262,7 +262,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                                 onClick={() => onAddShape?.("Rect")}
                                 style={isMobile ? {minWidth: mobileBtnMin, minHeight: mobileBtnMin} : undefined}
                             >
-                                <SquareIcon width={mobileIcon} height={mobileIcon}/>
+                                <SquareIcon width={iconSize} height={iconSize}/>
                             </IconButton>
 
                             <IconButton
@@ -271,7 +271,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                                 onClick={() => onAddShape?.("Circle")}
                                 style={isMobile ? {minWidth: mobileBtnMin, minHeight: mobileBtnMin} : undefined}
                             >
-                                <CircleIcon width={mobileIcon} height={mobileIcon}/>
+                                <CircleIcon width={iconSize} height={iconSize}/>
                             </IconButton>
                         </Flex>
                     </Flex>
@@ -289,7 +289,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                     onClick={undo}
                     style={isMobile ? {minWidth: mobileBtnMin, minHeight: mobileBtnMin} : undefined}
                 >
-                    <Undo2 size={mobileIcon}/>
+                    <Undo2 size={iconSize}/>
                 </IconButton>
             </Tooltip>
 
@@ -302,7 +302,7 @@ export default function ToolTip({activeTool, handleChangeState, onAddShape, mobi
                     onClick={redo}
                     style={isMobile ? {minWidth: mobileBtnMin, minHeight: mobileBtnMin} : undefined}
                 >
-                    <Redo2 size={mobileIcon}/>
+                    <Redo2 size={iconSize}/>
                 </IconButton>
             </Tooltip>
         </Flex>
