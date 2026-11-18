@@ -3,6 +3,7 @@ import { Box, Grid, IconButton } from "@radix-ui/themes";
 import { PanelLeft } from "lucide-react";
 import StageKonva from "./components/Stage.tsx";
 import Sidebar from "./components/Sidebar.tsx";
+import { UpdateBanner } from "./components/UpdateBanner.tsx";
 import { useDevice } from "./hooks/useDevice.ts";
 
 export default function App() {
@@ -18,7 +19,7 @@ export default function App() {
             width="100vw"
             className="overflow-hidden"
         >
-            {/* Mobile top-left toggle matching the Zoom pill styling */}
+            {/* Mobile top-left toggle */}
             {isMobile && (
                 <div className="fixed left-4 top-4 z-[9998] flex h-8 w-8 items-center justify-center rounded-md border border-[var(--gray-a6)] bg-[var(--color-panel-solid)] shadow-sm">
                     <IconButton
@@ -60,6 +61,9 @@ export default function App() {
             <Box ref={stageWrapperRef} width="100%" height="100%" className="relative overflow-hidden">
                 <StageKonva />
             </Box>
+
+            {/* Auto-updater toast notification */}
+            <UpdateBanner />
         </Grid>
     );
 }

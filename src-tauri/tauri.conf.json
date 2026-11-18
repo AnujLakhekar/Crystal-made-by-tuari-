@@ -37,7 +37,7 @@
       "requireSignedVersion": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQyOTU2OUJFMkQxQjkyM0MKUldROGtoc3R2bW1WMHBEYitmcGR2V21xWXZUNWgxR1lUcGtDek14dEhXYUJYTElHQ0RYTkp5SGMK",
       "endpoints": [
-        "https://github.com/YOUR_USERNAME/YOUR_REPO/releases/latest/download/latest.json"
+        "https://github.com/AnujLakhekar/Crystal-made-by-tuari-/releases/latest/download/latest.json"
       ]
     }
   }
