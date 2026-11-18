@@ -24,6 +24,8 @@ export function useAppUpdater(checkOnMount = true) {
         }
     }, []);
 
+    // yes
+
     const installUpdate = useCallback(async () => {
         if (!update) return;
         setDownloading(true);
