@@ -13,10 +13,41 @@ export enum TOOLS {
 }
 
 
+export interface CanvasConfig {
+    backgroundColor: string;
+    showGrid: boolean;
+    gridSize: number;
+    snapToGrid: boolean;
+}
+
+
 export interface BrushConfig {
     stroke: string;
     strokeWidth: number;
     tension: number;
+    thinning: number;
+    smoothing: number;
+    streamline: number;
+    taperStart: boolean;
+    taperEnd: boolean;
+}
+
+
+export interface TransformerConfig {
+    borderStroke: string;
+    borderStrokeWidth: number;
+    anchorStroke: string;
+    anchorStrokeWidth: number;
+    anchorSize: number;
+    padding: number;
+    rotateEnabled: boolean;
+    rotationSnapsEnabled: boolean;
+    rotationSnapStep: number;
+    keepRatio: boolean;
+    centeredScaling: boolean;
+    flipEnabled: boolean;
+    ignoreStroke: boolean;
+    minSize: number;
 }
 
 
@@ -50,13 +81,21 @@ export interface EditorState {
             width: number;
             height: number;
         };
+        position: { x: number; y: number };
+        scale: number;
     };
     bringToFront: (ids: string[]) => void;
     sendToBack: (ids: string[]) => void;
+    canvasConfig: CanvasConfig;
+    setCanvasConfig: (patch: Partial<CanvasConfig>) => void;
     brushConfig: BrushConfig;
     setBrushConfig: (patch: Partial<BrushConfig>) => void;
+    transformerConfig: TransformerConfig;
+    setTransformerConfig: (patch: Partial<TransformerConfig>) => void;
     activeTool: ToolType;
     setActiveTool: (tool: ToolType) => void,
+    setStageTransform: (position: { x: number; y: number }, scale: number) => void;
+    resetViewport: () => void;
 
     // Undo / Redo Stacks
     past: HistoryCommand[];
@@ -77,6 +116,8 @@ export interface EditorState {
     // UI Actions
     setSelectedIds: (ids: string[]) => void;
     stageResize: (width?: number, height?: number) => void;
+    getShapesByIds: (ids: string[]) => BaseShape[];
+    getShapesById: (id: string) => BaseShape | undefined;
 }
 
 const MAX_HISTORY = 50;
@@ -112,20 +153,74 @@ function executeCommand(
 }
 
 const useEditorState = create<EditorState>()(
-    subscribeWithSelector((set) => ({
+    subscribeWithSelector((set, get) => ({
         shapes: [],
         selectedIds: [],
+
         stage: {
             size: {
                 width: window.innerWidth,
                 height: window.innerHeight,
             },
+            position: {x: 0, y: 0},
+            scale: 1,
         },
         activeTool: TOOLS.CURSOR,
+        canvasConfig: {
+            backgroundColor: "#18181b",
+            showGrid: true,
+            gridSize: 24,
+            snapToGrid: false,
+        },
         brushConfig: {
             stroke: "#ffffff",
             strokeWidth: 4,
             tension: 0.4,
+            thinning: 0.55,
+            smoothing: 0.5,
+            streamline: 0.5,
+            taperStart: false,
+            taperEnd: false,
+        },
+        transformerConfig: {
+            borderStroke: "#888888",
+            borderStrokeWidth: 1.5,
+            anchorStroke: "#888888",
+            anchorStrokeWidth: 1.5,
+            anchorSize: 8,
+            padding: 6,
+            rotateEnabled: true,
+            rotationSnapsEnabled: true,
+            rotationSnapStep: 15,
+            keepRatio: false,
+            centeredScaling: false,
+            flipEnabled: true,
+            ignoreStroke: false,
+            minSize: 10,
+        },
+        setStageTransform: (position, scale) =>
+            set((state) => ({
+                stage: {
+                    ...state.stage,
+                    position,
+                    scale,
+                },
+            })),
+
+        resetViewport: () =>
+            set((state) => ({
+                stage: {
+                    ...state.stage,
+                    position: {x: 0, y: 0},
+                    scale: 1,
+                },
+            })),
+        getShapesById: (id: string) => {
+            return get().shapes.find((shape) => shape.id === id);
+        },
+        getShapesByIds: (ids) => {
+            const idSet = new Set(ids);
+            return get().shapes.filter((s) => idSet.has(s.id))
         },
         bringToFront: (ids) =>
             executeCommand(set, "Bring to Front", (draft) => {
@@ -140,9 +235,17 @@ const useEditorState = create<EditorState>()(
                 const rest = draft.filter((s) => !ids.includes(s.id));
                 draft.splice(0, draft.length, ...moving, ...rest);
             }),
+        setCanvasConfig: (patch) =>
+            set((state) => ({
+                canvasConfig: {...state.canvasConfig, ...patch},
+            })),
         setBrushConfig: (patch) =>
             set((state) => ({
                 brushConfig: {...state.brushConfig, ...patch},
+            })),
+        setTransformerConfig: (patch) =>
+            set((state) => ({
+                transformerConfig: {...state.transformerConfig, ...patch},
             })),
 
         past: [],

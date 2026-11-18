@@ -1,17 +1,20 @@
 import {memo} from "react";
-import {Rect, Circle, Line} from "react-konva";
+import {Rect, Circle, Path} from "react-konva";
 import Konva from "konva";
 import useEditorState, {BaseShape} from "../store/EditorState.ts";
 import {TOOLS, ToolType} from "../store/EditorState.ts";
+import {useMemo} from "react";
+import {getFreehandPath} from "../core/strokeGeometry.ts"
 
 
 interface ShapeItemProps {
     el: BaseShape;
     activeTool: ToolType;
     onUpdate: (id: string, patch: Partial<BaseShape>) => void;
+    hitStrokeWidth?: number;
 }
 
-const ShapeItem = memo(function ShapeItem({el, activeTool, onUpdate}: ShapeItemProps) {
+const ShapeItem = memo(function ShapeItem({el, activeTool, onUpdate, hitStrokeWidth = 12}: ShapeItemProps) {
     const commonProps = {
         id: el.id,
         name: "shape",
@@ -56,17 +59,35 @@ const ShapeItem = memo(function ShapeItem({el, activeTool, onUpdate}: ShapeItemP
         ...el.props,
     };
 
+    const pathData = useMemo(() => {
+        if (el.type !== "Freehand") return "";
+        return getFreehandPath(el.props.rawPoints as number[][], {
+            size: Number(el.props.strokeWidth ?? 6),
+            thinning: Number(el.props.thinning ?? 0.55),
+            smoothing: Number(el.props.smoothing ?? 0.3),
+            streamline: Number(el.props.streamline ?? 0.5),
+            start: { taper: Boolean(el.props.taperStart ?? false), cap: true },
+            end: { taper: Boolean(el.props.taperEnd ?? true), cap: true },
+        });
+    }, [el.type, el.props.rawPoints, el.props.strokeWidth, el.props.thinning, el.props.smoothing, el.props.streamline, el.props.taperStart, el.props.taperEnd]);
+
+
     switch (el.type) {
         case "Rect":
             return <Rect {...commonProps} />;
         case "Circle":
             return <Circle {...commonProps} />;
-        case  "Line":
-            return <Line {...commonProps}
-                         hitStrokeWidth={12}
-                         lineCap="round"
-                         lineJoin="round"
-                         tension={0.4}/>
+        case "Freehand":
+            return (
+                <Path
+                    {...commonProps}
+                    data={pathData}
+                    fill={String(el.props.stroke ?? "#ffffff")}
+                    stroke={undefined}
+                    strokeWidth={0}
+                    hitStrokeWidth={hitStrokeWidth}
+                />
+            );
         default:
             return null;
     }

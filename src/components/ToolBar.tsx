@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import useEditorState from "../store/EditorState.ts";
 import Konva from "konva";
+import { useDevice } from "../hooks/useDevice.ts";
 
 export interface SelectionToolbarProps {
     x: number;
@@ -27,6 +28,11 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
     const updateShape = useEditorState((s) => s.updateShape);
     const addShape = useEditorState((s) => s.addShape);
     const stageWidth = useEditorState((s) => s.stage.size.width);
+    const { isMobile } = useDevice();
+
+    // Touch-friendly button size
+    const itemSize = isMobile ? 44 : 28;
+    const iconSize = isMobile ? 18 : 15;
 
     // Inspect the first selected shape to reflect active toggle states
     const primaryShape = shapes.find((s) => s.id === selectedIds[0]);
@@ -122,7 +128,7 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
     };
 
     const itemClass =
-        "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded text-[var(--gray-11)] outline-none hover:bg-[var(--gray-a4)] hover:text-[var(--gray-12)] focus-visible:ring-2 focus-visible:ring-[var(--accent-8)] data-[state=on]:bg-[var(--accent-a4)] data-[state=on]:text-[var(--accent-11)]";
+        `inline-flex h-[${itemSize}px] w-[${itemSize}px] cursor-pointer items-center justify-center rounded text-[var(--gray-11)] outline-none hover:bg-[var(--gray-a4)] hover:text-[var(--gray-12)] focus-visible:ring-2 focus-visible:ring-[var(--accent-8)] data-[state=on]:bg-[var(--accent-a4)] data-[state=on]:text-[var(--accent-11)]`;
 
     return (
         <Toolbar.Root
@@ -143,7 +149,7 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
             {/* Fill Color */}
             <Tooltip content="Random Fill">
                 <Toolbar.Button onClick={handleRandomColor} className={itemClass} aria-label="Random Fill">
-                    <Palette size={15} />
+                    <Palette size={iconSize} />
                 </Toolbar.Button>
             </Tooltip>
 
@@ -160,19 +166,19 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
             >
                 <Tooltip content="Toggle Border">
                     <Toolbar.ToggleItem value="stroke" className={itemClass} aria-label="Border">
-                        <Square size={15} />
+                        <Square size={iconSize} />
                     </Toolbar.ToggleItem>
                 </Tooltip>
 
                 <Tooltip content="Dashed Border">
                     <Toolbar.ToggleItem value="dashed" className={itemClass} aria-label="Dashed">
-                        <Minus size={15} />
+                        <Minus size={iconSize} />
                     </Toolbar.ToggleItem>
                 </Tooltip>
 
                 <Tooltip content="Drop Shadow">
                     <Toolbar.ToggleItem value="shadow" className={itemClass} aria-label="Shadow">
-                        <Sparkles size={15} />
+                        <Sparkles size={iconSize} />
                     </Toolbar.ToggleItem>
                 </Tooltip>
             </Toolbar.ToggleGroup>
@@ -188,19 +194,19 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
             >
                 <Tooltip content="Align Left">
                     <Toolbar.ToggleItem value="left" className={itemClass} aria-label="Align Left">
-                        <AlignHorizontalJustifyStart size={15} />
+                        <AlignHorizontalJustifyStart size={iconSize} />
                     </Toolbar.ToggleItem>
                 </Tooltip>
 
                 <Tooltip content="Align Center">
                     <Toolbar.ToggleItem value="center" className={itemClass} aria-label="Align Center">
-                        <AlignHorizontalJustifyCenter size={15} />
+                        <AlignHorizontalJustifyCenter size={iconSize} />
                     </Toolbar.ToggleItem>
                 </Tooltip>
 
                 <Tooltip content="Align Right">
                     <Toolbar.ToggleItem value="right" className={itemClass} aria-label="Align Right">
-                        <AlignHorizontalJustifyEnd size={15} />
+                        <AlignHorizontalJustifyEnd size={iconSize} />
                     </Toolbar.ToggleItem>
                 </Tooltip>
             </Toolbar.ToggleGroup>
@@ -210,17 +216,17 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
             {/* Action Buttons: Duplicate & Delete */}
             <Tooltip content="Duplicate">
                 <Toolbar.Button onClick={handleDuplicate} className={itemClass} aria-label="Duplicate">
-                    <Copy size={15} />
+                    <Copy size={iconSize} />
                 </Toolbar.Button>
             </Tooltip>
 
             <Tooltip content="Delete (Del)">
                 <Toolbar.Button
                     onClick={handleDelete}
-                    className="inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded text-red-500 outline-none hover:bg-red-500/15 focus-visible:ring-2 focus-visible:ring-red-500"
+                    className={`inline-flex h-[${itemSize}px] w-[${itemSize}px] cursor-pointer items-center justify-center rounded text-red-500 outline-none hover:bg-red-500/15 focus-visible:ring-2 focus-visible:ring-red-500`}
                     aria-label="Delete"
                 >
-                    <Trash2 size={15} />
+                    <Trash2 size={iconSize} />
                 </Toolbar.Button>
             </Tooltip>
         </Toolbar.Root>

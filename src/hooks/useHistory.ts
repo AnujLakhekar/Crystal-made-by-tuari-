@@ -9,7 +9,6 @@ export function useHistory(enableShortcuts = true) {
     const redo = useEditorState((s) => s.redo);
     const setActiveTool = useEditorState((s) => s.setActiveTool);
 
-
     useHotkeys("s", () => {
         setActiveTool(TOOLS.SELECT)
     })
@@ -21,6 +20,8 @@ export function useHistory(enableShortcuts = true) {
     useHotkeys("p", () => {
         setActiveTool(TOOLS.PENCIL)
     })
+
+
 
     // Undo: Ctrl+Z / Cmd+Z
     useHotkeys(

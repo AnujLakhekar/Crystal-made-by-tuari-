@@ -34,6 +34,7 @@ export const useDevice = () => {
     const deviceInfo = useMemo(() => {
         const {width, height} = dimensions;
         const {isAndroid, isIOS, isIpad, isMobile, isTablet} = getDeviceInfo();
+        const touchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
         return {
             isMobile,
@@ -47,11 +48,15 @@ export const useDevice = () => {
             isPortrait: height > width,
             aspectRatio: width / height,
             pixelRatio: window.devicePixelRatio || 1,
-            touchSupport: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+            touchSupport,
             screenWidth: window.screen.width,
             screenHeight: window.screen.height,
             width,
-            height
+            height,
+            // Convenience flags for responsive UI
+            isTouchDevice: touchSupport,
+            isSmallScreen: width < 768,
+            isMediumScreen: width >= 768 && width < 1024,
         };
     }, [dimensions]);
 

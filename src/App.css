@@ -28,3 +28,17 @@
     align-items: center;
     gap: 8px;
 }
+
+/* Mobile touch-friendly styles */
+@media (max-width: 767px) {
+    /* Prevent body bounce/overscroll on iOS */
+    body {
+        overscroll-behavior: none;
+        touch-action: manipulation;
+    }
+
+    /* Ensure the canvas container captures all touch gestures */
+    .h-screen {
+        touch-action: none;
+    }
+}

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import Konva from "konva";
-import useEditorState, {TOOLS} from "../store/EditorState.ts";
+import useEditorState, { TOOLS } from "../store/EditorState.ts";
 
 interface SelectionRect {
     visible: boolean;
@@ -26,69 +26,85 @@ export function useSelectionMarquee() {
     const setSelectedIds = useEditorState((s) => s.setSelectedIds);
     const activeTool = useEditorState((s) => s.activeTool);
 
-    const handleMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-        if (e.target !== e.target.getStage()) return;
-        if (activeTool == TOOLS.PENCIL) return;
+    const handleMouseDown = useCallback(
+        (e: Konva.KonvaEventObject<PointerEvent | MouseEvent>) => {
+            if (e.evt.button !== 0) return;
+            if (e.target !== e.target.getStage()) return;
+            if (activeTool === TOOLS.PENCIL) return;
 
-        const pos = e.target.getStage()?.getPointerPosition();
-        if (!pos) return;
+            const pos = e.target.getStage()?.getRelativePointerPosition();
+            if (!pos) return;
 
-        setSelectedIds([]);
-        setSelectionRect({
-            visible: true,
-            x1: pos.x,
-            y1: pos.y,
-            x2: pos.x,
-            y2: pos.y,
-        });
-    }, [activeTool, setSelectedIds]);
+            setSelectedIds([]);
+            setSelectionRect({
+                visible: true,
+                x1: pos.x,
+                y1: pos.y,
+                x2: pos.x,
+                y2: pos.y,
+            });
+        },
+        [activeTool, setSelectedIds]
+    );
 
-    const handleMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-        if (activeTool == TOOLS.PENCIL) return;
-        if (!selectionRect.visible) return;
-        const pos = e.target.getStage()?.getPointerPosition();
-        if (!pos) return;
+    const handleMouseMove = useCallback(
+        (e: Konva.KonvaEventObject<PointerEvent | MouseEvent>) => {
+            if (activeTool === TOOLS.PENCIL) return;
+            if (!selectionRect.visible) return;
 
-        setSelectionRect((prev) => ({
-            ...prev,
-            x2: pos.x,
-            y2: pos.y,
-        }));
-    }, [selectionRect.visible]);
+            const pos = e.target.getStage()?.getRelativePointerPosition();
+            if (!pos) return;
 
-    const handleMouseUp = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-        if (activeTool == TOOLS.PENCIL) return;
-        if (!selectionRect.visible) return;
-        const stage = e.target.getStage();
-        if (!stage) {
-            setSelectionRect((prev) => ({ ...prev, visible: false }));
-            return;
-        }
+            setSelectionRect((prev) => ({
+                ...prev,
+                x2: pos.x,
+                y2: pos.y,
+            }));
+        },
+        [activeTool, selectionRect.visible]
+    );
 
-        const box = {
-            x: Math.min(selectionRect.x1, selectionRect.x2),
-            y: Math.min(selectionRect.y1, selectionRect.y2),
-            width: Math.abs(selectionRect.x2 - selectionRect.x1),
-            height: Math.abs(selectionRect.y2 - selectionRect.y1),
-        };
+    const handleMouseUp = useCallback(
+        (e: Konva.KonvaEventObject<PointerEvent | MouseEvent>) => {
+            if (activeTool === TOOLS.PENCIL) return;
+            if (!selectionRect.visible) return;
 
-        const foundIds: string[] = [];
-        stage.find(".shape").forEach((node: Konva.Node) => {
-            if (Konva.Util.haveIntersection(box, node.getClientRect())) {
-                foundIds.push(node.id());
+            const stage = e.target.getStage();
+            if (!stage) {
+                setSelectionRect((prev) => ({ ...prev, visible: false }));
+                return;
             }
-        });
 
-        setSelectedIds(foundIds);
-        setSelectionRect((prev) => ({ ...prev, visible: false }));
-    }, [selectionRect, setSelectedIds]);
+            const box = {
+                x: Math.min(selectionRect.x1, selectionRect.x2),
+                y: Math.min(selectionRect.y1, selectionRect.y2),
+                width: Math.abs(selectionRect.x2 - selectionRect.x1),
+                height: Math.abs(selectionRect.y2 - selectionRect.y1),
+            };
+
+            const foundIds: string[] = [];
+            stage.find(".shape").forEach((node: Konva.Node) => {
+                if (Konva.Util.haveIntersection(box, node.getClientRect({ relativeTo: stage }))) {
+                    foundIds.push(node.id());
+                }
+            });
+
+            setSelectedIds(foundIds);
+            setSelectionRect((prev) => ({ ...prev, visible: false }));
+        },
+        [activeTool, selectionRect, setSelectedIds]
+    );
 
     // Clear selection when clicking empty stage (any tool)
-    const handleStageClickClear = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
-        if (e.target === e.target.getStage()) {
-            setSelectedIds([]);
-        }
-    }, [setSelectedIds]);
+    const handleStageClickClear = useCallback(
+        (e: Konva.KonvaEventObject<PointerEvent | MouseEvent>) => {
+            if (e.evt.button !== 0) return;
+            if (e.target === e.target.getStage()) {
+                setSelectedIds([]);
+            }
+        },
+        [setSelectedIds]
+    );
 
     return {
         selectionRect,
