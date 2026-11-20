@@ -15,7 +15,7 @@ A desktop drawing application built with Tauri, React, and Konva.
 ## Features
 
 ### Drawing & Shapes
-- Canvas-based drawing with shape support (Rectangles, Circles, Lines)
+- Canvas-based drawing with shape support (Rectangles, Circles)
 - Freehand pencil drawing with real-time smooth preview (draft path)
 - Advanced brush settings: stroke color, nib size, velocity thinning, smoothing, streamline, taper start/end
 - Draggable shapes with selection and multi-selection (Shift+Click to toggle)
@@ -24,7 +24,7 @@ A desktop drawing application built with Tauri, React, and Konva.
 ### Transformation
 - Shape transformation (rotate, scale) with Figma-style custom handles
 - Configurable transformer: border color/width, anchor size, padding, rotation snapping, aspect ratio lock, centered scaling, flip enablement
-- Selection toolbar with formatting tools (fill, border, shadow, alignment, duplicate, delete)
+- Selection toolbar with formatting tools (fill, border, alignment, duplicate, delete)
 
 ### Tools & UI
 - Floating tool bar with cursor, pencil, select, and shape-drawing tools
@@ -84,12 +84,13 @@ npm run tauri build
 ```
 src/
 ├── components/
-│   ├── ShapeItem.tsx              # Memoized shape renderer (Rect/Circle/Line/Freehand)
+│   ├── ShapeItem.tsx              # Memoized shape renderer (Rect/Circle/Freehand)
 │   ├── Settings.tsx               # Project settings dialog (Canvas/Pen/Transformer tabs)
 │   ├── Sidebar.tsx                # Collapsible sidebar, overlay drawer on mobile
 │   ├── Stage.tsx                  # Konva canvas with grid, shapes, freehand drawing
+│   ├── Swatch.tsx                 # Style inspector panel (fill/border colors, border style)
 │   ├── TransformerComponent.tsx   # Figma-style transformer with config-driven handles
-│   ├── ToolBar.tsx                # Selection formatting toolbar (fill, border, shadow, align)
+│   ├── ToolBar.tsx                # Selection formatting toolbar (style, align, duplicate, delete)
 │   └── ToolTip.tsx                # Floating tool bar with tools and undo/redo
 ├── core/
 │   └── strokeGeometry.ts          # Stroke path generation (getFreehandPath)
@@ -167,7 +168,7 @@ Each shape on the canvas is a `BaseShape`:
 ```typescript
 interface BaseShape {
     id: string;           // UUID
-    type: string;         // "Rect" | "Circle" | "Line" | "Freehand"
+    type: string;         // "Rect" | "Circle" | "Freehand"
     x: number;            // Position X
     y: number;            // Position Y
     rotation: number;     // Rotation in degrees
@@ -196,7 +197,7 @@ All shape mutations (add, update, delete) are recorded in the undo/redo history 
 The main canvas component handling:
 - Konva `Stage` and `Layer` rendering with background color from `canvasConfig`
 - Grid rendering using O(1) canvas 2D repeating pattern (auto-hidden at low zoom on mobile)
-- Shape rendering via `ShapeItem` components (Rect, Circle, Line, Freehand)
+- Shape rendering via `ShapeItem` components (Rect, Circle, Freehand)
 - Freehand pencil drawing with smooth draft preview (configurable via `brushConfig`)
 - Mouse and touch event handling for box selection, pencil drawing, and pan/zoom
 - Transformer for shape rotation and scaling (config-driven via `transformerConfig`)
@@ -205,7 +206,7 @@ The main canvas component handling:
 
 #### `ShapeItem.tsx`
 - Memoized component for rendering individual shapes
-- Polymorphic rendering: Rect, Circle, Line, Freehand
+- Polymorphic rendering: Rect, Circle, Freehand
 - Freehand paths use `getFreehandPath` with brush config (smoothing, streamline, taper)
 - Click-to-select with Shift+click multi-select
 - Drag support (when tool is CURSOR)
@@ -228,10 +229,17 @@ The main canvas component handling:
 
 #### `ToolBar.tsx`
 - Context-sensitive selection toolbar appearing above selected shapes
-- Formatting controls: random fill, border, dashed border, shadow
+- Style & Color dropdown using `StyleInspectorPanel` from `Swatch.tsx`: fill color swatches (27 colors + custom picker), border color swatches, border width (1–12px), border style (solid/dashed/none)
 - Canvas alignment: left, center, right
 - Duplicate and delete actions
 - All mutations recorded in undo/redo history
+
+#### `Swatch.tsx`
+- Style inspector panel with color swatches and border controls
+- Fill color section: 9×3 grid of swatches (pastels, vibrant, dark + transparent + custom color wheel)
+- Border color section: same swatch grid rendered as ring outlines
+- Border style section: stepped width track (1, 2, 4, 6, 8, 12px) + style buttons (solid, dashed, none)
+- Used as a dropdown panel inside `ToolBar.tsx`
 
 #### `Sidebar.tsx`
 - Collapsible panel (250px expanded, 48px collapsed)
@@ -381,6 +389,55 @@ The `useDevice.ts` hook detects device type and provides `isMobile`, `isTablet`,
 - Check `brushConfig.smoothing` and `brushConfig.streamline` values in Settings
 - On low-tier devices, draft preview is disabled by optimizer — check `optimizer.draftPreview`
 - Verify `getFreehandPath` receives correct brush config parameters
+
+## Android Release Signing
+
+The Android build is configured for automatic release signing via GitHub Actions CI/CD. The signed APK output is named `app-universal-release.apk` (instead of `app-universal-release-unsigned.apk`) and installs directly on devices.
+
+### Configuration
+
+The signing configuration lives in `src-tauri/gen/android/app/build.gradle.kts`. It reads credentials from `src-tauri/gen/android/keystore.properties` at build time. Local builds without the file will not break — the signing block is guarded by an `exists()` check.
+
+### Required GitHub Secrets
+
+Before triggering a release, add these secrets to your GitHub repository:
+
+| Secret | Description |
+|--------|-------------|
+| `ANDROID_KEYSTORE_BASE64` | Base64-encoded `.jks` keystore file |
+| `ANDROID_KEYSTORE_PASSWORD` | Keystore password |
+| `ANDROID_KEY_ALIAS` | Key alias inside the keystore |
+| `ANDROID_KEY_PASSWORD` | Key password |
+
+To generate the base64-encoded keystore from a local `.jks` file:
+
+```bash
+base64 < your-keystore.jks > keystore-base64.txt
+```
+
+### ProGuard
+
+Release builds enable code shrinking with ProGuard (`isMinifyEnabled = true`). Custom rules in `*.pro` files under the app directory are automatically included alongside the default optimization rules.
+
+## CI/CD
+
+Release builds are triggered automatically on `v*` git tags via GitHub Actions (`.github/workflows/release.yml`).
+
+### Desktop Builds
+
+Windows and Linux desktop builds are published using the `tauri-apps/tauri-action`. Artifacts are uploaded to the GitHub Release page.
+
+Required secrets:
+- `GITHUB_TOKEN` (provided automatically)
+- `TAURI_SIGNING_PRIVATE_KEY`
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
+
+### Android Builds
+
+The Android job decodes the keystore secret, writes `keystore.properties`, and builds both APK and AAB artifacts. The output files are uploaded as GitHub Release assets:
+
+- `src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk`
+- `src-tauri/gen/android/app/build/outputs/bundle/universalRelease/*.aab`
 
 ## License
 

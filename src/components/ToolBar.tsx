@@ -1,19 +1,15 @@
 import { Toolbar } from "radix-ui";
-import { Tooltip } from "@radix-ui/themes";
+import { DropdownMenu, Tooltip } from "@radix-ui/themes";
 import {
     Trash2,
     Copy,
-    Palette,
-    Square,
-    Sparkles,
-    Minus,
     AlignHorizontalJustifyStart,
     AlignHorizontalJustifyCenter,
-    AlignHorizontalJustifyEnd,
+    AlignHorizontalJustifyEnd
 } from "lucide-react";
 import useEditorState from "../store/EditorState.ts";
-import Konva from "konva";
 import { useDevice } from "../hooks/useDevice.ts";
+import { StyleInspectorPanel, BorderStyleType } from "../components/Swatch.tsx"
 
 export interface SelectionToolbarProps {
     x: number;
@@ -30,45 +26,51 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
     const stageWidth = useEditorState((s) => s.stage.size.width);
     const { isMobile } = useDevice();
 
-    // Touch-friendly button size
     const itemSize = isMobile ? 44 : 32;
-    const iconSize = isMobile ? 18 : 18;
+    const iconSize = 18;
 
-    // Inspect the first selected shape to reflect active toggle states
     const primaryShape = shapes.find((s) => s.id === selectedIds[0]);
 
-    // 1. Multiple ToggleGroup values (active styles on selected shape)
-    const activeStyles: string[] = [];
-    if (primaryShape?.props?.strokeWidth) activeStyles.push("stroke");
-    if (Array.isArray(primaryShape?.props?.dash) && primaryShape.props.dash.length > 0) {
-        activeStyles.push("dashed");
-    }
-    if (primaryShape?.props?.shadowBlur) activeStyles.push("shadow");
+    const currentFill = (primaryShape?.props?.fill as string) ?? "transparent";
+    const currentStroke = (primaryShape?.props?.stroke as string) ?? "#FFFFFF";
+    const currentStrokeWidth = Number(primaryShape?.props?.strokeWidth ?? 0);
+    const currentDash = primaryShape?.props?.dash as number[] | undefined;
 
-    const handleStyleToggle = (values: string[]) => {
-        const hasStroke = values.includes("stroke");
-        const hasDashed = values.includes("dashed");
-        const hasShadow = values.includes("shadow");
+    const currentBorderStyle: BorderStyleType =
+        currentStrokeWidth === 0
+            ? "none"
+            : Array.isArray(currentDash) && currentDash.length > 0
+                ? "dashed"
+                : "solid";
 
+    const updateSelectedProps = (patch: Record<string, unknown>) => {
         selectedIds.forEach((id) => {
             const shape = useEditorState.getState().shapes.find((s) => s.id === id);
             if (!shape) return;
-
             updateShape(id, {
-                props: {
-                    ...shape.props,
-                    stroke: hasStroke || hasDashed ? "#ffffff" : undefined,
-                    strokeWidth: hasStroke || hasDashed ? 2 : 0,
-                    dash: hasDashed ? [6, 6] : [],
-                    shadowColor: hasShadow ? "rgba(0,0,0,0.6)" : undefined,
-                    shadowBlur: hasShadow ? 12 : 0,
-                    shadowOffsetY: hasShadow ? 4 : 0,
-                },
+                props: { ...shape.props, ...patch },
             });
         });
     };
 
-    // 2. Single ToggleGroup value (horizontal alignment on canvas)
+    const handleBorderStyleChange = (style: BorderStyleType) => {
+        if (style === "none") {
+            updateSelectedProps({ strokeWidth: 0, dash: [] });
+        } else if (style === "dashed") {
+            updateSelectedProps({
+                stroke: currentStroke === "transparent" ? "#FFFFFF" : currentStroke,
+                strokeWidth: currentStrokeWidth > 0 ? currentStrokeWidth : 2,
+                dash: [6, 6],
+            });
+        } else {
+            updateSelectedProps({
+                stroke: currentStroke === "transparent" ? "#FFFFFF" : currentStroke,
+                strokeWidth: currentStrokeWidth > 0 ? currentStrokeWidth : 2,
+                dash: [],
+            });
+        }
+    };
+
     const handleAlign = (alignment: string) => {
         if (!alignment) return;
 
@@ -89,18 +91,6 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
             if (alignment === "right") nextX = stageWidth - width - 24 + offset;
 
             updateShape(id, { x: nextX });
-        });
-    };
-
-    const handleRandomColor = () => {
-        const newColor = Konva.Util.getRandomColor();
-        selectedIds.forEach((id) => {
-            const shape = useEditorState.getState().shapes.find((s) => s.id === id);
-            if (shape) {
-                updateShape(id, {
-                    props: { ...shape.props, fill: newColor },
-                });
-            }
         });
     };
 
@@ -128,7 +118,7 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
     };
 
     const itemClass =
-        `inline-flex h-[${itemSize}px] w-[${itemSize}px] cursor-pointer items-center justify-center rounded text-[var(--gray-11)] outline-none hover:bg-[var(--gray-a4)] hover:text-[var(--gray-12)] focus-visible:ring-2 focus-visible:ring-[var(--accent-8)] data-[state=on]:bg-[var(--accent-a4)] data-[state=on]:text-[var(--accent-11)]`;
+        "inline-flex cursor-pointer items-center justify-center rounded text-[var(--gray-11)] outline-none hover:bg-[var(--gray-a4)] hover:text-[var(--gray-12)] focus-visible:ring-2 focus-visible:ring-[var(--accent-8)] data-[state=on]:bg-[var(--accent-a4)] data-[state=on]:text-[var(--accent-11)]";
 
     return (
         <Toolbar.Root
@@ -146,42 +136,68 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
                 boxShadow: "var(--shadow-4)",
             }}
         >
-            {/* Fill Color */}
-            <Tooltip content="Random Fill">
-                <Toolbar.Button onClick={handleRandomColor} className={itemClass} aria-label="Random Fill">
-                    <Palette size={iconSize} />
-                </Toolbar.Button>
-            </Tooltip>
-
-            <Toolbar.Separator className="mx-1 h-4 w-px bg-[var(--gray-a6)]" />
-
-
-            {/* Multiple ToggleGroup: Border, Dashed, Shadow */}
-            <Toolbar.ToggleGroup
-                type="multiple"
-                value={activeStyles}
-                onValueChange={handleStyleToggle}
-                className="flex items-center gap-1"
-                aria-label="Shape styles"
-            >
-                <Tooltip content="Toggle Border">
-                    <Toolbar.ToggleItem value="stroke" className={itemClass} aria-label="Border">
-                        <Square size={iconSize} />
-                    </Toolbar.ToggleItem>
+            {/* Fill & Border Style Dropdown */}
+            <DropdownMenu.Root>
+                <Tooltip content="Style & Color">
+                    <DropdownMenu.Trigger>
+                        <Toolbar.Button
+                            className={itemClass}
+                            style={{ width: itemSize, height: itemSize }}
+                            aria-label="Style and Color"
+                        >
+                            <span
+                                className="w-4 h-4 rounded-full"
+                                style={{
+                                    backgroundColor:
+                                        currentFill === "transparent"
+                                            ? "transparent"
+                                            : currentFill,
+                                    border:
+                                        currentStrokeWidth > 0 &&
+                                        currentStroke !== "transparent"
+                                            ? `2px solid ${currentStroke}`
+                                            : "1.5px solid var(--gray-a8)",
+                                }}
+                            />
+                        </Toolbar.Button>
+                    </DropdownMenu.Trigger>
                 </Tooltip>
 
-                <Tooltip content="Dashed Border">
-                    <Toolbar.ToggleItem value="dashed" className={itemClass} aria-label="Dashed">
-                        <Minus size={iconSize} />
-                    </Toolbar.ToggleItem>
-                </Tooltip>
-
-                <Tooltip content="Drop Shadow">
-                    <Toolbar.ToggleItem value="shadow" className={itemClass} aria-label="Shadow">
-                        <Sparkles size={iconSize} />
-                    </Toolbar.ToggleItem>
-                </Tooltip>
-            </Toolbar.ToggleGroup>
+                <DropdownMenu.Content
+                    sideOffset={8}
+                    className="!p-0 !bg-transparent !border-0 !shadow-none"
+                >
+                    <StyleInspectorPanel
+                        fillColor={currentFill}
+                        borderColor={currentStroke}
+                        borderWidth={currentStrokeWidth}
+                        borderStyle={currentBorderStyle}
+                        onChangeFill={(fill) => updateSelectedProps({ fill })}
+                        onChangeBorderColor={(stroke) =>
+                            updateSelectedProps({
+                                stroke,
+                                strokeWidth:
+                                    stroke === "transparent"
+                                        ? 0
+                                        : currentStrokeWidth > 0
+                                            ? currentStrokeWidth
+                                            : 2,
+                            })
+                        }
+                        onChangeBorderWidth={(strokeWidth) =>
+                            updateSelectedProps({
+                                stroke:
+                                    currentStroke === "transparent"
+                                        ? "#FFFFFF"
+                                        : currentStroke,
+                                strokeWidth,
+                                dash: currentBorderStyle === "dashed" ? [6, 6] : [],
+                            })
+                        }
+                        onChangeBorderStyle={handleBorderStyleChange}
+                    />
+                </DropdownMenu.Content>
+            </DropdownMenu.Root>
 
             <Toolbar.Separator className="mx-1 h-4 w-px bg-[var(--gray-a6)]" />
 
@@ -193,19 +209,34 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
                 aria-label="Canvas alignment"
             >
                 <Tooltip content="Align Left">
-                    <Toolbar.ToggleItem value="left" className={itemClass} aria-label="Align Left">
+                    <Toolbar.ToggleItem
+                        value="left"
+                        className={itemClass}
+                        style={{ width: itemSize, height: itemSize }}
+                        aria-label="Align Left"
+                    >
                         <AlignHorizontalJustifyStart size={iconSize} />
                     </Toolbar.ToggleItem>
                 </Tooltip>
 
                 <Tooltip content="Align Center">
-                    <Toolbar.ToggleItem value="center" className={itemClass} aria-label="Align Center">
+                    <Toolbar.ToggleItem
+                        value="center"
+                        className={itemClass}
+                        style={{ width: itemSize, height: itemSize }}
+                        aria-label="Align Center"
+                    >
                         <AlignHorizontalJustifyCenter size={iconSize} />
                     </Toolbar.ToggleItem>
                 </Tooltip>
 
                 <Tooltip content="Align Right">
-                    <Toolbar.ToggleItem value="right" className={itemClass} aria-label="Align Right">
+                    <Toolbar.ToggleItem
+                        value="right"
+                        className={itemClass}
+                        style={{ width: itemSize, height: itemSize }}
+                        aria-label="Align Right"
+                    >
                         <AlignHorizontalJustifyEnd size={iconSize} />
                     </Toolbar.ToggleItem>
                 </Tooltip>
@@ -215,7 +246,12 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
 
             {/* Action Buttons: Duplicate & Delete */}
             <Tooltip content="Duplicate">
-                <Toolbar.Button onClick={handleDuplicate} className={itemClass} aria-label="Duplicate">
+                <Toolbar.Button
+                    onClick={handleDuplicate}
+                    className={itemClass}
+                    style={{ width: itemSize, height: itemSize }}
+                    aria-label="Duplicate"
+                >
                     <Copy size={iconSize} />
                 </Toolbar.Button>
             </Tooltip>
@@ -223,12 +259,26 @@ export default function SelectionToolbar({ x, y }: SelectionToolbarProps) {
             <Tooltip content="Delete (Del)">
                 <Toolbar.Button
                     onClick={handleDelete}
-                    className={`inline-flex h-[${itemSize}px] w-[${itemSize}px] cursor-pointer items-center justify-center rounded text-red-500 outline-none hover:bg-red-500/15 focus-visible:ring-2 focus-visible:ring-red-500`}
+                    className="inline-flex cursor-pointer items-center justify-center rounded text-red-500 outline-none hover:bg-red-500/15 focus-visible:ring-2 focus-visible:ring-red-500"
+                    style={{ width: itemSize, height: itemSize }}
                     aria-label="Delete"
                 >
                     <Trash2 size={iconSize} />
                 </Toolbar.Button>
             </Tooltip>
+
+            {/*<Toolbar.Separator className="mx-1 h-4 w-px bg-[var(--gray-a6)]" />*/}
+
+            {/*<Tooltip content="more">*/}
+            {/*    <Toolbar.Button*/}
+            {/*        onClick={()}*/}
+            {/*        className={itemClass}*/}
+            {/*        style={{ width: itemSize, height: itemSize }}*/}
+            {/*        aria-label="more"*/}
+            {/*    >*/}
+            {/*        <EllipsisVertical size={iconSize} />*/}
+            {/*    </Toolbar.Button>*/}
+            {/*</Tooltip>*/}
         </Toolbar.Root>
     );
 }
