@@ -50,6 +50,12 @@ export interface TransformerConfig {
     minSize: number;
 }
 
+export type PerfTier = "auto" | "low" | "medium" | "high";
+
+export interface OptimizerConfig {
+    tier: PerfTier;
+}
+
 
 export type ToolType = `${TOOLS}`;
 
@@ -92,6 +98,8 @@ export interface EditorState {
     setBrushConfig: (patch: Partial<BrushConfig>) => void;
     transformerConfig: TransformerConfig;
     setTransformerConfig: (patch: Partial<TransformerConfig>) => void;
+    optimizerConfig: OptimizerConfig;
+    setOptimizerConfig: (patch: Partial<OptimizerConfig>) => void;
     activeTool: ToolType;
     setActiveTool: (tool: ToolType) => void,
     setStageTransform: (position: { x: number; y: number }, scale: number) => void;
@@ -198,6 +206,9 @@ const useEditorState = create<EditorState>()(
             ignoreStroke: false,
             minSize: 10,
         },
+        optimizerConfig: {
+            tier: "auto",
+        },
         setStageTransform: (position, scale) =>
             set((state) => ({
                 stage: {
@@ -246,6 +257,10 @@ const useEditorState = create<EditorState>()(
         setTransformerConfig: (patch) =>
             set((state) => ({
                 transformerConfig: {...state.transformerConfig, ...patch},
+            })),
+        setOptimizerConfig: (patch) =>
+            set((state) => ({
+                optimizerConfig: {...state.optimizerConfig, ...patch},
             })),
 
         past: [],

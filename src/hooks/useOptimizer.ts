@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useDevice } from "./useDevice";
+import useEditorState from "../store/EditorState.ts";
 
 /**
  * Performance tiers ranked by device capability.
@@ -38,18 +39,19 @@ interface OptimizerConfig {
 
 export function useOptimizer(): OptimizerConfig {
     const device = useDevice();
+    const userTier = useEditorState((s) => s.optimizerConfig.tier);
 
     return useMemo(() => {
         const { isMobile, isTablet, isDesktop, pixelRatio: rawRatio, screenWidth, screenHeight } = device;
 
-        // Classify device tier
-        let tier: PerfTier;
+        // Classify device tier (used when userTier is "auto")
+        let autoTier: PerfTier;
         if (isDesktop) {
-            tier = "high";
+            autoTier = "high";
         } else if (isTablet) {
-            tier = "medium";
+            autoTier = "medium";
         } else {
-            tier = "low";
+            autoTier = "low";
         }
 
         // Cap pixel ratio to avoid over-rendering on high-DPI mobile
@@ -60,8 +62,11 @@ export function useOptimizer(): OptimizerConfig {
         const isSmallScreen = screenArea < 768 * 1024;
 
         if (isMobile && isSmallScreen) {
-            tier = "low";
+            autoTier = "low";
         }
+
+        // Use user-selected tier if not "auto"
+        const tier: PerfTier = userTier === "auto" ? autoTier : userTier;
 
         switch (tier) {
             case "low":
@@ -104,7 +109,7 @@ export function useOptimizer(): OptimizerConfig {
                     effectsEnabled: true,
                 };
         }
-    }, [device]);
+    }, [device, userTier]);
 }
 
 export default useOptimizer;

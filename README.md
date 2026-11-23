@@ -24,10 +24,11 @@ A desktop drawing application built with Tauri, React, and Konva.
 ### Transformation
 - Shape transformation (rotate, scale) with Figma-style custom handles
 - Configurable transformer: border color/width, anchor size, padding, rotation snapping, aspect ratio lock, centered scaling, flip enablement
-- Selection toolbar with formatting tools (fill, border, alignment, duplicate, delete)
+- Selection toolbar with style inspector (fill/border color swatches, border width, border style), alignment, duplicate, and delete
 
 ### Tools & UI
 - Floating tool bar with cursor, pencil, select, and shape-drawing tools
+- Selection toolbar with style inspector panel: 27 color swatches for fill and border, border width (1–12px), border style (solid/dashed/none)
 - Project settings dialog with three tabs: Canvas & Grid, Pen & Ink, Transformer
 - Canvas settings: background color, grid toggle, grid spacing, snap to grid, zoom level
 - Pen settings: ink color, nib size, velocity thinning, smoothing, streamline, taper controls
@@ -250,8 +251,10 @@ The main canvas component handling:
 #### `ToolTip.tsx`
 - Floating toolbar positioned at the bottom center
 - Tool buttons: Cursor, Pencil, Select, Shape (with active state highlighting)
+- Pencil tool animated drawer with brush color (8 presets + custom picker) and stroke size (4 presets + slider)
 - Shape addition popover with Rect and Circle options
 - Undo/Redo buttons with keyboard shortcut labels
+- Mobile pan mode toggle (Hand icon) for single-finger canvas panning
 
 #### `App.tsx`
 - Main app layout with Radix Grid (sidebar + stage)
@@ -317,6 +320,7 @@ The main canvas component handling:
 1. Add a new `case` in the switch statement in `ShapeItem.tsx`
 2. Update the `handleAddShape()` function in `Stage.tsx` to support the new type
 3. Add a button for the new shape in `ToolTip.tsx`
+4. Update the `BaseShape` type comment in `EditorState.ts` to include the new type
 
 ### Adding a New Setting
 
@@ -324,6 +328,12 @@ The main canvas component handling:
 2. Add the default value in the store's initial state
 3. Add a control (slider, switch, color picker, etc.) in the relevant tab of `Settings.tsx`
 4. Wire the setting in the consuming component (e.g., `Stage.tsx`, `TransformerComponent.tsx`, `usePencilDrawing.ts`)
+
+### Adding a New Style Option to the Toolbar
+
+1. Add the new style control to `Swatch.tsx` (e.g., a new swatch row, width step, or style button)
+2. Update the `StyleInspectorPanelProps` interface with the new prop and callback
+3. Wire the callback in `ToolBar.tsx` to call `updateSelectedProps()` with the appropriate shape patch
 
 ### Performance Optimization
 

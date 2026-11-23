@@ -5,6 +5,7 @@ import {
     Flex,
     IconButton,
     ScrollArea,
+    Select,
     Separator,
     Slider,
     Switch,
@@ -17,23 +18,30 @@ import {
     PenTool,
     Scaling,
     RotateCcw,
+    Gauge,
 } from "lucide-react";
 import { useState } from "react";
 import useEditorState from "../store/EditorState.ts";
 
-type SettingsSection = "canvas" | "pen" | "transformer";
+type SettingsSection = "canvas" | "pen" | "transformer" | "performance";
 
 function SettingRow({
-    title,
-    description,
-    children,
-}: {
+                        title,
+                        description,
+                        children,
+                    }: {
     title: string;
     description?: string;
     children: React.ReactNode;
 }) {
     return (
-        <Flex align="center" justify="between" gap="4" py="2">
+        <Flex
+            direction={{ initial: "column", sm: "row" }}
+            align={{ initial: "stretch", sm: "center" }}
+            justify="between"
+            gap={{ initial: "2", sm: "4" }}
+            py="2"
+        >
             <Box style={{ flex: 1 }}>
                 <Text as="div" size="2" weight="medium">
                     {title}
@@ -44,7 +52,12 @@ function SettingRow({
                     </Text>
                 )}
             </Box>
-            <Flex align="center" gap="2" style={{ flexShrink: 0 }}>
+            <Flex
+                align="center"
+                justify={{ initial: "end", sm: "start" }}
+                gap="2"
+                style={{ flexShrink: 0 }}
+            >
                 {children}
             </Flex>
         </Flex>
@@ -63,6 +76,9 @@ export default function Settings() {
     const trConfig = useEditorState((s) => s.transformerConfig);
     const setTrConfig = useEditorState((s) => s.setTransformerConfig);
 
+    const optimizerConfig = useEditorState((s) => s.optimizerConfig);
+    const setOptimizerConfig = useEditorState((s) => s.setOptimizerConfig);
+
     const stage = useEditorState((s) => s.stage);
     const setStageTransform = useEditorState((s) => s.setStageTransform);
     const resetViewport = useEditorState((s) => s.resetViewport);
@@ -71,12 +87,13 @@ export default function Settings() {
         { id: "canvas", label: "Canvas & Grid", icon: <Monitor size={15} /> },
         { id: "pen", label: "Pen & Ink", icon: <PenTool size={15} /> },
         { id: "transformer", label: "Transformer", icon: <Scaling size={15} /> },
+        { id: "performance", label: "Performance", icon: <Gauge size={15} /> },
     ];
 
     return (
         <Dialog.Root>
             <Dialog.Trigger>
-                <IconButton variant="ghost" color="gray" aria-label="Settings">
+                <IconButton variant="ghost" color="gray" aria-label="Settings" className="cursor-pointer">
                     <SettingsIcon size={18} />
                 </IconButton>
             </Dialog.Trigger>
@@ -84,24 +101,35 @@ export default function Settings() {
             <Dialog.Content
                 style={{
                     maxWidth: 680,
+                    width: "94vw",
                     padding: 0,
                     overflow: "hidden",
                 }}
             >
-                <Flex style={{ height: 480 }}>
-                    {/* Left Navigation Rail */}
+                <Flex
+                    direction={{ initial: "column", md: "row" }}
+                    className="h-[82vh] max-h-[540px] md:h-[480px]"
+                >
+                    {/* Navigation: Horizontal tabs on mobile, Left rail on desktop */}
                     <Flex
-                        direction="column"
+                        direction={{ initial: "row", md: "column" }}
+                        align={{ initial: "center", md: "stretch" }}
                         justify="between"
-                        p="3"
-                        style={{
-                            width: 190,
-                            backgroundColor: "var(--gray-2)",
-                            borderRight: "1px solid var(--gray-a5)",
-                        }}
+                        p={{ initial: "2", md: "3" }}
+                        className="shrink-0 border-b border-grayA-5 bg-gray-2 md:w-[190px] md:border-b-0 md:border-r"
                     >
-                        <Flex direction="column" gap="1">
-                            <Text size="2" weight="bold" style={{ padding: '4px 8px' }}>
+                        <Flex
+                            direction={{ initial: "row", md: "column" }}
+                            gap="1"
+                            className="w-full overflow-x-auto [&::-webkit-scrollbar]:hidden"
+                            style={{ scrollbarWidth: "none" }}
+                        >
+                            <Text
+                                size="2"
+                                weight="bold"
+                                className="hidden md:block"
+                                style={{ padding: "4px 8px" }}
+                            >
                                 Preferences
                             </Text>
                             {navItems.map((item) => {
@@ -111,28 +139,38 @@ export default function Settings() {
                                         key={item.id}
                                         type="button"
                                         onClick={() => setSection(item.id)}
-                                        className={`flex items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs font-medium transition-colors cursor-pointer ${
+                                        className={`flex shrink-0 items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer md:justify-start md:gap-2 md:py-2 ${
                                             active
-                                                ? "bg-[var(--accent-a4)] text-[var(--accent-11)]"
-                                                : "text-[var(--gray-11)] hover:bg-[var(--gray-a3)] hover:text-[var(--gray-12)]"
+                                                ? "bg-accentA-4 text-accent-11"
+                                                : "text-gray-11 hover:bg-grayA-3 hover:text-gray-12"
                                         }`}
                                     >
                                         {item.icon}
-                                        {item.label}
+                                        <span>{item.label}</span>
                                     </button>
                                 );
                             })}
                         </Flex>
 
-                        <Text size="1" color="gray" style={{ paddingLeft: 8 }}>
+                        <Text
+                            size="1"
+                            color="gray"
+                            className="hidden md:block"
+                            style={{ paddingLeft: 8 }}
+                        >
                             {Math.round(stage.size.width)} × {Math.round(stage.size.height)} px
                         </Text>
                     </Flex>
 
                     {/* Right Settings Content */}
-                    <Flex direction="column" style={{ flex: 1 }}>
-                        <Box px="5" pt="4" pb="3" style={{ borderBottom: "1px solid var(--gray-a5)" }}>
-                            <Dialog.Title size="4" mb="1">
+                    <Flex direction="column" style={{ flex: 1, minHeight: 0 }}>
+                        <Box
+                            px={{ initial: "4", md: "5" }}
+                            pt={{ initial: "3", md: "4" }}
+                            pb={{ initial: "2", md: "3" }}
+                            className="border-b border-grayA-5"
+                        >
+                            <Dialog.Title size={{ initial: "3", md: "4" }} mb="1">
                                 {navItems.find((n) => n.id === section)?.label}
                             </Dialog.Title>
                             <Dialog.Description size="1" color="gray">
@@ -141,7 +179,7 @@ export default function Settings() {
                         </Box>
 
                         <ScrollArea type="auto" scrollbars="vertical" style={{ flex: 1 }}>
-                            <Flex direction="column" gap="2" px="5" py="3">
+                            <Flex direction="column" gap="2" px={{ initial: "4", md: "5" }} py="3">
                                 {/* ─── 1. CANVAS & GRID ─── */}
                                 {section === "canvas" && (
                                     <>
@@ -158,7 +196,7 @@ export default function Settings() {
                                                 onChange={(e) =>
                                                     setCanvasConfig({ backgroundColor: e.target.value })
                                                 }
-                                                className="h-7 w-7 cursor-pointer rounded border border-[var(--gray-a6)] bg-transparent"
+                                                className="h-7 w-7 cursor-pointer rounded border border-grayA-6 bg-transparent"
                                             />
                                         </SettingRow>
 
@@ -179,7 +217,7 @@ export default function Settings() {
                                             description="Distance between grid subdivisions"
                                         >
                                             <Slider
-                                                style={{ width: 130 }}
+                                                className="w-full sm:w-[130px]"
                                                 min={8}
                                                 max={96}
                                                 step={4}
@@ -205,7 +243,7 @@ export default function Settings() {
                                             description="Viewport magnification"
                                         >
                                             <Slider
-                                                style={{ width: 110 }}
+                                                className="w-full sm:w-[110px]"
                                                 min={10}
                                                 max={400}
                                                 step={10}
@@ -238,7 +276,7 @@ export default function Settings() {
                                                 type="color"
                                                 value={brushConfig.stroke}
                                                 onChange={(e) => setBrushConfig({ stroke: e.target.value })}
-                                                className="h-7 w-7 cursor-pointer rounded border border-[var(--gray-a6)] bg-transparent"
+                                                className="h-7 w-7 cursor-pointer rounded border border-grayA-6 bg-transparent"
                                             />
                                         </SettingRow>
 
@@ -247,7 +285,7 @@ export default function Settings() {
                                             description="Base diameter of freehand ink"
                                         >
                                             <Slider
-                                                style={{ width: 140 }}
+                                                className="w-full sm:w-[140px]"
                                                 min={1}
                                                 max={48}
                                                 step={1}
@@ -263,7 +301,7 @@ export default function Settings() {
                                             description="0% = uniform fineliner, 70%+ = expressive brush"
                                         >
                                             <Slider
-                                                style={{ width: 140 }}
+                                                className="w-full sm:w-[140px]"
                                                 min={0}
                                                 max={95}
                                                 step={5}
@@ -277,7 +315,7 @@ export default function Settings() {
                                             description="Softens sharp corners along stroke edges"
                                         >
                                             <Slider
-                                                style={{ width: 140 }}
+                                                className="w-full sm:w-[140px]"
                                                 min={0}
                                                 max={100}
                                                 step={5}
@@ -291,7 +329,7 @@ export default function Settings() {
                                             description="Stabilizes shaky mouse/hand movement"
                                         >
                                             <Slider
-                                                style={{ width: 140 }}
+                                                className="w-full sm:w-[140px]"
                                                 min={0}
                                                 max={100}
                                                 step={5}
@@ -318,6 +356,43 @@ export default function Settings() {
                                     </>
                                 )}
 
+                                {/* ─── 4. PERFORMANCE ─── */}
+                                {section === "performance" && (
+                                    <>
+                                        <SettingRow
+                                            title="Performance Tier"
+                                            description="Override auto-detected rendering quality — higher tiers use more GPU and CPU"
+                                        >
+                                            <Select.Root
+                                                value={optimizerConfig.tier}
+                                                onValueChange={(v) => setOptimizerConfig({ tier: v as any })}
+                                            >
+                                                <Select.Trigger
+                                                    style={{
+                                                        width: 140,
+                                                        fontSize: 13,
+                                                    }}
+                                                />
+                                                <Select.Content>
+                                                    <Select.Item value="auto">Auto (recommended)</Select.Item>
+                                                    <Select.Item value="low">Low</Select.Item>
+                                                    <Select.Item value="medium">Medium</Select.Item>
+                                                    <Select.Item value="high">High</Select.Item>
+                                                </Select.Content>
+                                            </Select.Root>
+                                        </SettingRow>
+
+                                        <Separator size="4" />
+
+                                        <SettingRow
+                                            title="What this affects"
+                                            description="Grid density, pencil draft preview, shadow effects, max shapes, and rotation snapping"
+                                        >
+                                            <Text size="1" color="gray">—</Text>
+                                        </SettingRow>
+                                    </>
+                                )}
+
                                 {/* ─── 3. TRANSFORMER ─── */}
                                 {section === "transformer" && (
                                     <>
@@ -331,7 +406,7 @@ export default function Settings() {
                                                         anchorStroke: e.target.value,
                                                     })
                                                 }
-                                                className="h-7 w-7 cursor-pointer rounded border border-[var(--gray-a6)] bg-transparent"
+                                                className="h-7 w-7 cursor-pointer rounded border border-grayA-6 bg-transparent"
                                             />
                                         </SettingRow>
 
@@ -340,7 +415,7 @@ export default function Settings() {
                                             description="Thickness of selection outline"
                                         >
                                             <Slider
-                                                style={{ width: 130 }}
+                                                className="w-full sm:w-[130px]"
                                                 min={1}
                                                 max={5}
                                                 step={0.5}
@@ -354,7 +429,7 @@ export default function Settings() {
                                             description="Dimensions of corner resize handles"
                                         >
                                             <Slider
-                                                style={{ width: 130 }}
+                                                className="w-full sm:w-[130px]"
                                                 min={4}
                                                 max={16}
                                                 step={1}
@@ -368,7 +443,7 @@ export default function Settings() {
                                             description="Gap between shape bounds and selection box"
                                         >
                                             <Slider
-                                                style={{ width: 130 }}
+                                                className="w-full sm:w-[130px]"
                                                 min={0}
                                                 max={24}
                                                 step={2}
@@ -458,13 +533,17 @@ export default function Settings() {
                         </ScrollArea>
 
                         <Flex
-                            justify="end"
-                            px="5"
-                            py="3"
-                            style={{ borderTop: "1px solid var(--gray-a5)" }}
+                            align="center"
+                            justify="between"
+                            px={{ initial: "4", md: "5" }}
+                            py={{ initial: "2", md: "3" }}
+                            className="border-t border-grayA-5"
                         >
+                            <Text size="1" color="gray" className="md:hidden">
+                                {Math.round(stage.size.width)} × {Math.round(stage.size.height)} px
+                            </Text>
                             <Dialog.Close>
-                                <Button variant="soft" color="gray">
+                                <Button variant="soft" color="gray" className="ml-auto cursor-pointer">
                                     Done
                                 </Button>
                             </Dialog.Close>

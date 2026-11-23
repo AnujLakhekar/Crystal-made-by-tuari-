@@ -11,7 +11,7 @@ export function usePencilDrawing() {
     const isDrawingRef = useRef(false);
     const [draftPoints, setDraftPoints] = useState<number[][]>([]);
 
-    const activeTool = useEditorState((s) => s.activeTool);
+    const activeTool =  useEditorState((s) => s.activeTool);
     const addShape = useEditorState((s) => s.addShape);
     const brushConfig = useEditorState((s) => s.brushConfig);
     const setSelectedIds = useEditorState((s) => s.setSelectedIds);
